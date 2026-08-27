@@ -1,88 +1,88 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Country &amp; University Selector</title>
-    <meta name="description" content="Pick a country and browse its universities, loaded live from public REST APIs." />
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        :focus-visible {
-            outline: 2px solid #1a73e8;
-            outline-offset: 2px;
-        }
-        .spin {
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        @media (prefers-reduced-motion: reduce) {
-            .spin { animation: none; }
-        }
-        select:disabled, button:disabled {
-            cursor: not-allowed;
-            opacity: 0.6;
-        }
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Country &amp; University Selector</title>
+<meta name="description" content="Pick a country and browse its universities, loaded live from public REST APIs." />
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+  :focus-visible {
+    outline: 2px solid #1a73e8;
+    outline-offset: 2px;
+  }
+  .spin {
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .spin { animation: none; }
+  }
+  select:disabled, button:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+</style>
 </head>
 <body class="bg-gray-50 text-gray-900 min-h-screen antialiased">
-    <div class="max-w-[600px] mx-auto px-4 py-10 sm:py-16">
+  <div class="max-w-[600px] mx-auto px-4 py-10 sm:py-16">
 
-        <!-- Header -->
-        <header class="mb-8 text-center">
-            <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-white border border-gray-200 mb-4">
-                <i data-lucide="globe" class="w-6 h-6 text-gray-700" aria-hidden="true"></i>
-            </div>
-            <h1 class="text-2xl font-medium tracking-tight text-gray-900">Country &amp; University Selector</h1>
-            <p class="mt-2 text-sm text-gray-500">Choose a country to browse its universities, loaded live from public data.</p>
-        </header>
+    <!-- Header -->
+    <header class="mb-8 text-center">
+      <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-white border border-gray-200 mb-4">
+        <i data-lucide="globe" class="w-6 h-6 text-gray-700" aria-hidden="true"></i>
+      </div>
+      <h1 class="text-2xl font-medium tracking-tight text-gray-900">Country &amp; University Selector</h1>
+      <p class="mt-2 text-sm text-gray-500">Choose a country to browse its universities, loaded live from public data.</p>
+    </header>
 
-        <!-- Main form card -->
-        <main class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 sm:p-8">
-            <form id="selectionForm" novalidate>
+    <!-- Main form card -->
+    <main class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 sm:p-8">
+      <form id="selectionForm" novalidate>
 
-                <!-- Country field -->
-                <div class="mb-5">
-                    <label for="countrySelect" class="block text-sm font-medium text-gray-700 mb-1.5">Country</label>
-                    <div class="relative">
-                        <select
-                        id="countrySelect"
-                        name="country"
-                        class="w-full appearance-none bg-white border border-gray-300 rounded-md py-2.5 pl-3 pr-9 text-sm text-gray-900 focus-visible:outline-none disabled:bg-gray-50"
-                        aria-describedby="statusMessage"
-                        disabled
-                        >
-                        <option value="">Loading countries...</option>
-                    </select>
-                    <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true"></i>
-                </div>
-            </div>
+        <!-- Country field -->
+        <div class="mb-5">
+          <label for="countrySelect" class="block text-sm font-medium text-gray-700 mb-1.5">Country</label>
+          <div class="relative">
+            <select
+              id="countrySelect"
+              name="country"
+              class="w-full appearance-none bg-white border border-gray-300 rounded-md py-2.5 pl-3 pr-9 text-sm text-gray-900 focus-visible:outline-none disabled:bg-gray-50"
+              aria-describedby="statusMessage"
+              disabled
+            >
+              <option value="">Loading countries...</option>
+            </select>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true"></i>
+          </div>
+        </div>
 
-            <!-- University field -->
-            <div class="mb-5">
-                <label for="universitySelect" class="block text-sm font-medium text-gray-700 mb-1.5">University</label>
-                <div class="relative">
-                    <select
-                    id="universitySelect"
-                    name="university"
-                    class="w-full appearance-none bg-white border border-gray-300 rounded-md py-2.5 pl-3 pr-9 text-sm text-gray-900 focus-visible:outline-none disabled:bg-gray-50"
-                    aria-describedby="statusMessage universityCount"
-                    disabled
-                    >
-                    <option value="">Select a country first</option>
-                </select>
-                <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true"></i>
-            </div>
-            <p id="universityCount" class="mt-1.5 text-xs text-gray-400"></p>
+        <!-- University field -->
+        <div class="mb-5">
+          <label for="universitySelect" class="block text-sm font-medium text-gray-700 mb-1.5">University</label>
+          <div class="relative">
+            <select
+              id="universitySelect"
+              name="university"
+              class="w-full appearance-none bg-white border border-gray-300 rounded-md py-2.5 pl-3 pr-9 text-sm text-gray-900 focus-visible:outline-none disabled:bg-gray-50"
+              aria-describedby="statusMessage universityCount"
+              disabled
+            >
+              <option value="">Select a country first</option>
+            </select>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true"></i>
+          </div>
+          <p id="universityCount" class="mt-1.5 text-xs text-gray-400"></p>
         </div>
 
         <!-- Loading indicator -->
         <div id="loadingIndicator" class="flex items-center gap-2 text-sm text-gray-500 mb-4" aria-hidden="true">
-            <i data-lucide="loader-circle" class="w-4 h-4 spin"></i>
-            <span>Loading countries...</span>
+          <i data-lucide="loader-circle" class="w-4 h-4 spin"></i>
+          <span>Loading countries...</span>
         </div>
 
         <!-- Status message -->
@@ -90,84 +90,84 @@
 
         <!-- Actions -->
         <div class="flex items-center gap-3">
-            <button
+          <button
             type="submit"
             id="submitButton"
             class="inline-flex items-center gap-2 bg-gray-900 text-white text-sm font-medium rounded-md px-4 py-2.5 hover:bg-gray-800 disabled:hover:bg-gray-900 focus-visible:outline-none transition-colors"
             disabled
-            >
+          >
             <i data-lucide="check-circle-2" class="w-4 h-4" aria-hidden="true"></i>
             Submit
-        </button>
-        <button
-        type="button"
-        id="resetButton"
-        class="inline-flex items-center gap-2 bg-white text-gray-700 text-sm font-medium rounded-md px-4 py-2.5 border border-gray-300 hover:bg-gray-50 focus-visible:outline-none transition-colors"
-        >
-        <i data-lucide="rotate-ccw" class="w-4 h-4" aria-hidden="true"></i>
-        Reset
-    </button>
-</div>
-</form>
-</main>
+          </button>
+          <button
+            type="button"
+            id="resetButton"
+            class="inline-flex items-center gap-2 bg-white text-gray-700 text-sm font-medium rounded-md px-4 py-2.5 border border-gray-300 hover:bg-gray-50 focus-visible:outline-none transition-colors"
+          >
+            <i data-lucide="rotate-ccw" class="w-4 h-4" aria-hidden="true"></i>
+            Reset
+          </button>
+        </div>
+      </form>
+    </main>
 
-<!-- Result panel -->
-<section
-id="resultSection"
-class="mt-6 bg-white border border-gray-200 rounded-lg shadow-sm p-6 sm:p-8 hidden"
-aria-labelledby="resultHeading"
->
-<div class="flex items-center gap-2 mb-4">
-    <i data-lucide="graduation-cap" class="w-5 h-5 text-gray-700" aria-hidden="true"></i>
-    <h2 id="resultHeading" class="text-base font-medium text-gray-900">Selection</h2>
-</div>
-<dl class="space-y-3 text-sm">
-    <div class="flex flex-col sm:flex-row sm:items-baseline sm:gap-2">
-        <dt class="text-gray-500 w-28 shrink-0">Country</dt>
-        <dd id="selectedCountryOutput" class="text-gray-900 font-medium"></dd>
-    </div>
-    <div class="flex flex-col sm:flex-row sm:items-baseline sm:gap-2">
-        <dt class="text-gray-500 w-28 shrink-0">University</dt>
-        <dd id="selectedUniversityOutput" class="text-gray-900 font-medium"></dd>
-    </div>
-</dl>
-<div id="resultLinkWrap" class="mt-4 hidden">
-    <a
-    id="resultLink"
-    href="#"
-    target="_blank"
-    rel="noopener noreferrer"
-    class="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 hover:underline"
+    <!-- Result panel -->
+    <section
+      id="resultSection"
+      class="mt-6 bg-white border border-gray-200 rounded-lg shadow-sm p-6 sm:p-8 hidden"
+      aria-labelledby="resultHeading"
     >
-    Open university website
-    <i data-lucide="external-link" class="w-3.5 h-3.5" aria-hidden="true"></i>
-</a>
-</div>
-</section>
+      <div class="flex items-center gap-2 mb-4">
+        <i data-lucide="graduation-cap" class="w-5 h-5 text-gray-700" aria-hidden="true"></i>
+        <h2 id="resultHeading" class="text-base font-medium text-gray-900">Selection</h2>
+      </div>
+      <dl class="space-y-3 text-sm">
+        <div class="flex flex-col sm:flex-row sm:items-baseline sm:gap-2">
+          <dt class="text-gray-500 w-28 shrink-0">Country</dt>
+          <dd id="selectedCountryOutput" class="text-gray-900 font-medium"></dd>
+        </div>
+        <div class="flex flex-col sm:flex-row sm:items-baseline sm:gap-2">
+          <dt class="text-gray-500 w-28 shrink-0">University</dt>
+          <dd id="selectedUniversityOutput" class="text-gray-900 font-medium"></dd>
+        </div>
+      </dl>
+      <div id="resultLinkWrap" class="mt-4 hidden">
+        <a
+          id="resultLink"
+          href="#"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 hover:underline"
+        >
+          Open university website
+          <i data-lucide="external-link" class="w-3.5 h-3.5" aria-hidden="true"></i>
+        </a>
+      </div>
+    </section>
 
-<footer class="mt-10 text-center text-xs text-gray-400">
-    Data from CountriesNow and the Hipo Universities API (via CORS proxy).
-</footer>
-</div>
+    <footer class="mt-10 text-center text-xs text-gray-400">
+      Data from CountriesNow and the Hipo Universities API (via CORS proxy).
+    </footer>
+  </div>
 
-<script type="module">
+  <script type="module">
     // ---------------------------------------------------------------------
     // Constants
     // ---------------------------------------------------------------------
     const COUNTRIES_API_URL = "https://countriesnow.space/api/v0.1/countries";
-    // Use a reliable CORS proxy over HTTPS.
-    const PROXY_URL = "https://api.cors.lol/?url="; // cors.lol proxy[reference:2]
+    // Use a CORS proxy over HTTPS to fetch the HTTP university API.
+    const PROXY_URL = "https://api.allorigins.win/raw?url=";
     const UNIVERSITIES_BASE_URL = "http://universities.hipolabs.com/search"; // HTTP, but we'll proxy it
-    const REQUEST_TIMEOUT_MS = 15000; // Increased timeout for proxy
+    const REQUEST_TIMEOUT_MS = 10000;
 
     // ---------------------------------------------------------------------
     // Cache
     // ---------------------------------------------------------------------
     const cache = {
-        countries: null,
-        universitiesByCountry: new Map(),
-        hipoCountryMap: null,
-        hipoAllUniversities: null
+      countries: null,
+      universitiesByCountry: new Map(),
+      hipoCountryMap: null,
+      hipoAllUniversities: null
     };
 
     // ---------------------------------------------------------------------
@@ -193,502 +193,428 @@ aria-labelledby="resultHeading"
     // Icon initialization
     // ---------------------------------------------------------------------
     function initIcons() {
-        try {
-            if (window.lucide && typeof window.lucide.createIcons === "function") {
-                window.lucide.createIcons();
-            }
-        } catch (err) {
-            console.error("Lucide icon initialization failed:", err);
+      try {
+        if (window.lucide && typeof window.lucide.createIcons === "function") {
+          window.lucide.createIcons();
         }
+      } catch (err) {
+        console.error("Lucide icon initialization failed:", err);
+      }
     }
 
     // ---------------------------------------------------------------------
     // Networking helpers
     // ---------------------------------------------------------------------
     function fetchWithTimeout(url, timeoutMs = REQUEST_TIMEOUT_MS) {
-        return new Promise((resolve, reject) => {
-            let settled = false;
-            const timeoutId = setTimeout(() => {
-                if (!settled) {
-                    settled = true;
-                    reject(new Error("TIMEOUT_OR_ABORTED"));
-                }
-            }, timeoutMs);
+      return new Promise((resolve, reject) => {
+        let settled = false;
+        const timeoutId = setTimeout(() => {
+          if (!settled) {
+            settled = true;
+            reject(new Error("TIMEOUT_OR_ABORTED"));
+          }
+        }, timeoutMs);
 
-            fetch(url)
-            .then((response) => {
-                if (!settled) {
-                    settled = true;
-                    clearTimeout(timeoutId);
-                    resolve(response);
-                }
-            })
-            .catch((err) => {
-                if (!settled) {
-                    settled = true;
-                    clearTimeout(timeoutId);
-                    reject(err);
-                }
-            });
-        });
+        fetch(url)
+          .then((response) => {
+            if (!settled) {
+              settled = true;
+              clearTimeout(timeoutId);
+              resolve(response);
+            }
+          })
+          .catch((err) => {
+            if (!settled) {
+              settled = true;
+              clearTimeout(timeoutId);
+              reject(err);
+            }
+          });
+      });
     }
 
     async function fetchJson(url) {
-        let response;
-        try {
-            response = await fetchWithTimeout(url);
-        } catch (err) {
-            if (err && err.message === "TIMEOUT_OR_ABORTED") {
-                throw err;
-            }
-            console.error("Network error fetching", url, err);
-            throw new Error("NETWORK_ERROR");
+      let response;
+      try {
+        response = await fetchWithTimeout(url);
+      } catch (err) {
+        if (err && err.message === "TIMEOUT_OR_ABORTED") {
+          throw err;
         }
+        console.error("Network error fetching", url, err);
+        throw new Error("NETWORK_ERROR");
+      }
 
-        if (!response.ok) {
-            console.error("HTTP error", response.status, url);
-            throw new Error("HTTP_" + response.status);
-        }
+      if (!response.ok) {
+        console.error("HTTP error", response.status, url);
+        throw new Error("HTTP_" + response.status);
+      }
 
-        try {
-            const data = await response.json();
-            return data;
-        } catch (err) {
-            console.error("Invalid JSON from", url, err);
-            throw new Error("INVALID_JSON");
-        }
+      try {
+        const data = await response.json();
+        return data;
+      } catch (err) {
+        console.error("Invalid JSON from", url, err);
+        throw new Error("INVALID_JSON");
+      }
     }
 
     // ---------------------------------------------------------------------
     // Status UI helpers
     // ---------------------------------------------------------------------
     function showLoading(message) {
-        loadingIndicator.setAttribute("aria-hidden", "false");
-        loadingIndicator.classList.remove("hidden");
-        loadingIndicator.querySelector("span").textContent = message;
-        selectionForm.setAttribute("aria-busy", "true");
+      loadingIndicator.setAttribute("aria-hidden", "false");
+      loadingIndicator.classList.remove("hidden");
+      loadingIndicator.querySelector("span").textContent = message;
+      selectionForm.setAttribute("aria-busy", "true");
     }
 
     function hideLoading() {
-        loadingIndicator.classList.add("hidden");
-        loadingIndicator.setAttribute("aria-hidden", "true");
-        selectionForm.setAttribute("aria-busy", "false");
+      loadingIndicator.classList.add("hidden");
+      loadingIndicator.setAttribute("aria-hidden", "true");
+      selectionForm.setAttribute("aria-busy", "false");
     }
 
     function showError(message) {
-        statusMessage.textContent = message;
-        statusMessage.classList.remove("text-green-700", "text-gray-500");
-        statusMessage.classList.add("text-red-600");
+      statusMessage.textContent = message;
+      statusMessage.classList.remove("text-green-700", "text-gray-500");
+      statusMessage.classList.add("text-red-600");
     }
 
     function showSuccess(message) {
-        statusMessage.textContent = message;
-        statusMessage.classList.remove("text-red-600", "text-gray-500");
-        statusMessage.classList.add("text-green-700");
+      statusMessage.textContent = message;
+      statusMessage.classList.remove("text-red-600", "text-gray-500");
+      statusMessage.classList.add("text-green-700");
     }
 
     function showNeutralStatus(message) {
-        statusMessage.textContent = message;
-        statusMessage.classList.remove("text-red-600", "text-green-700");
-        statusMessage.classList.add("text-gray-500");
+      statusMessage.textContent = message;
+      statusMessage.classList.remove("text-red-600", "text-green-700");
+      statusMessage.classList.add("text-gray-500");
     }
 
     function clearStatus() {
-        statusMessage.textContent = "";
-        statusMessage.classList.remove("text-red-600", "text-green-700", "text-gray-500");
+      statusMessage.textContent = "";
+      statusMessage.classList.remove("text-red-600", "text-green-700", "text-gray-500");
     }
 
     function friendlyErrorMessage(err, context) {
-        const code = err && err.message ? err.message : "";
-        if (code === "TIMEOUT_OR_ABORTED") return "The request timed out. Please try again.";
-        if (code === "NETWORK_ERROR") return context === "countries" ? "Unable to load countries." : "Unable to load universities.";
-        if (code.startsWith("HTTP_")) {
-            const status = code.replace("HTTP_", "");
-            if (status === "429") return "Rate limited. Please try again shortly.";
-            if (status === "404") return "No data found.";
-            if (status === "400") return "Invalid request.";
-            if (status === "500") return "Server error.";
-            return "API error.";
-        }
-        if (code === "INVALID_JSON") return "Unexpected response from server.";
-        return context === "countries" ? "Unable to load countries." : "Unable to load universities.";
+      const code = err && err.message ? err.message : "";
+      if (code === "TIMEOUT_OR_ABORTED") return "The request timed out. Please try again.";
+      if (code === "NETWORK_ERROR") return context === "countries" ? "Unable to load countries." : "Unable to load universities.";
+      if (code.startsWith("HTTP_")) {
+        const status = code.replace("HTTP_", "");
+        if (status === "429") return "Rate limited. Please try again shortly.";
+        if (status === "404") return "No data found.";
+        if (status === "400") return "Invalid request.";
+        if (status === "500") return "Server error.";
+        return "API error.";
+      }
+      if (code === "INVALID_JSON") return "Unexpected response from server.";
+      return context === "countries" ? "Unable to load countries." : "Unable to load universities.";
     }
 
     // ---------------------------------------------------------------------
     // Data helpers
     // ---------------------------------------------------------------------
     function sortCountries(countries) {
-        return [...countries].sort((a, b) => {
-            const nameA = (a && a.name && a.name.common) || "";
-            const nameB = (b && b.name && b.name.common) || "";
-            return nameA.localeCompare(nameB);
-        });
+      return [...countries].sort((a, b) => {
+        const nameA = (a && a.name && a.name.common) || "";
+        const nameB = (b && b.name && b.name.common) || "";
+        return nameA.localeCompare(nameB);
+      });
     }
 
     function normalizeUniversity(raw) {
-        return {
-            name: typeof raw.name === "string" && raw.name ? raw.name : "Unnamed university",
-            country: typeof raw.country === "string" ? raw.country : "",
-            alpha_two_code: typeof raw.alpha_two_code === "string" ? raw.alpha_two_code : "",
-            stateProvince: raw["state-province"] || null,
-            domains: Array.isArray(raw.domains) ? raw.domains : [],
-            webPages: Array.isArray(raw.web_pages) ? raw.web_pages : []
-        };
+      return {
+        name: typeof raw.name === "string" && raw.name ? raw.name : "Unnamed university",
+        country: typeof raw.country === "string" ? raw.country : "",
+        alpha_two_code: typeof raw.alpha_two_code === "string" ? raw.alpha_two_code : "",
+        stateProvince: raw["state-province"] || null,
+        domains: Array.isArray(raw.domains) ? raw.domains : [],
+        webPages: Array.isArray(raw.web_pages) ? raw.web_pages : []
+      };
     }
 
     function sortUniversities(universities) {
-        return [...universities].sort((a, b) => a.name.localeCompare(b.name));
+      return [...universities].sort((a, b) => a.name.localeCompare(b.name));
     }
 
     function deduplicateUniversities(universities) {
-        const seen = new Set();
-        const result = [];
-        for (const uni of universities) {
-            const key = (uni.name + "|" + (uni.domains[0] || "")).toLowerCase();
-            if (!seen.has(key)) {
-                seen.add(key);
-                result.push(uni);
-            }
+      const seen = new Set();
+      const result = [];
+      for (const uni of universities) {
+        const key = (uni.name + "|" + (uni.domains[0] || "")).toLowerCase();
+        if (!seen.has(key)) {
+          seen.add(key);
+          result.push(uni);
         }
-        return result;
+      }
+      return result;
     }
 
     function isValidHttpUrl(value) {
-        if (typeof value !== "string" || !value) return false;
-        try {
-            const url = new URL(value);
-            return url.protocol === "http:" || url.protocol === "https:";
-        } catch (err) {
-            return false;
-        }
+      if (typeof value !== "string" || !value) return false;
+      try {
+        const url = new URL(value);
+        return url.protocol === "http:" || url.protocol === "https:";
+      } catch (err) {
+        return false;
+      }
     }
 
     // ---------------------------------------------------------------------
     // Country loading
     // ---------------------------------------------------------------------
     async function loadCountries() {
-        showLoading("Loading countries...");
-        countrySelect.disabled = true;
-        countrySelect.replaceChildren();
-        const loadingOption = document.createElement("option");
-        loadingOption.value = "";
-        loadingOption.textContent = "Loading countries...";
-        countrySelect.appendChild(loadingOption);
+      showLoading("Loading countries...");
+      countrySelect.disabled = true;
+      countrySelect.replaceChildren();
+      const loadingOption = document.createElement("option");
+      loadingOption.value = "";
+      loadingOption.textContent = "Loading countries...";
+      countrySelect.appendChild(loadingOption);
 
-        try {
-            if (cache.countries) {
-                populateCountrySelect(cache.countries);
-                countrySelect.disabled = false;
-                showNeutralStatus("Select a country to see its universities.");
-                hideLoading();
-                return;
-            }
-
-            const data = await fetchJson(COUNTRIES_API_URL);
-            if (!data || !data.data || !Array.isArray(data.data)) {
-                throw new Error("INVALID_RESPONSE");
-            }
-
-            const countries = data.data.map(item => ({
-                name: { common: item.name || item.country || "Unknown" },
-                cca2: item.code || item.iso2 || ""
-            })).filter(c => c.cca2 && c.name.common);
-
-            if (countries.length === 0) throw new Error("EMPTY_RESPONSE");
-
-            cache.countries = sortCountries(countries);
-            populateCountrySelect(cache.countries);
-            countrySelect.disabled = false;
-            showNeutralStatus("Select a country to see its universities.");
-        } catch (err) {
-            console.error("Failed to load countries:", err);
-            countrySelect.replaceChildren();
-            const failOption = document.createElement("option");
-            failOption.value = "";
-            failOption.textContent = "Failed to load countries";
-            countrySelect.appendChild(failOption);
-            showError(friendlyErrorMessage(err, "countries"));
-        } finally {
-            hideLoading();
+      try {
+        if (cache.countries) {
+          populateCountrySelect(cache.countries);
+          countrySelect.disabled = false;
+          showNeutralStatus("Select a country to see its universities.");
+          hideLoading();
+          return;
         }
+
+        const data = await fetchJson(COUNTRIES_API_URL);
+        if (!data || !data.data || !Array.isArray(data.data)) {
+          throw new Error("INVALID_RESPONSE");
+        }
+
+        const countries = data.data.map(item => ({
+          name: { common: item.name || item.country || "Unknown" },
+          cca2: item.code || item.iso2 || ""
+        })).filter(c => c.cca2 && c.name.common);
+
+        if (countries.length === 0) throw new Error("EMPTY_RESPONSE");
+
+        cache.countries = sortCountries(countries);
+        populateCountrySelect(cache.countries);
+        countrySelect.disabled = false;
+        showNeutralStatus("Select a country to see its universities.");
+      } catch (err) {
+        console.error("Failed to load countries:", err);
+        countrySelect.replaceChildren();
+        const failOption = document.createElement("option");
+        failOption.value = "";
+        failOption.textContent = "Failed to load countries";
+        countrySelect.appendChild(failOption);
+        showError(friendlyErrorMessage(err, "countries"));
+      } finally {
+        hideLoading();
+      }
     }
 
     function populateCountrySelect(countries) {
-        countrySelect.replaceChildren();
-        const placeholder = document.createElement("option");
-        placeholder.value = "";
-        placeholder.textContent = "Select a country";
-        countrySelect.appendChild(placeholder);
+      countrySelect.replaceChildren();
+      const placeholder = document.createElement("option");
+      placeholder.value = "";
+      placeholder.textContent = "Select a country";
+      countrySelect.appendChild(placeholder);
 
-        const fragment = document.createDocumentFragment();
-        for (const country of countries) {
-            if (!country || !country.name || !country.name.common || !country.cca2) continue;
-            const option = document.createElement("option");
-            option.value = country.cca2;
-            option.textContent = country.name.common;
-            fragment.appendChild(option);
-        }
-        countrySelect.appendChild(fragment);
+      const fragment = document.createDocumentFragment();
+      for (const country of countries) {
+        if (!country || !country.name || !country.name.common || !country.cca2) continue;
+        const option = document.createElement("option");
+        option.value = country.cca2;
+        option.textContent = country.name.common;
+        fragment.appendChild(option);
+      }
+      countrySelect.appendChild(fragment);
     }
 
     function getCountryByCca2(cca2) {
-        if (!cache.countries) return null;
-        return cache.countries.find((c) => c.cca2 === cca2) || null;
+      if (!cache.countries) return null;
+      return cache.countries.find((c) => c.cca2 === cca2) || null;
     }
 
     // ---------------------------------------------------------------------
     // University loading – always via proxy (HTTPS)
     // ---------------------------------------------------------------------
     async function fetchUniversitiesByCountryName(countryName) {
-        // Build the HTTP URL for the universities API
-        const httpUrl = UNIVERSITIES_BASE_URL + "?country=" + encodeURIComponent(countryName);
-        // Proxy it over HTTPS using cors.lol[reference:3]
-        const proxyUrl = PROXY_URL + encodeURIComponent(httpUrl);
-        const data = await fetchJson(proxyUrl);
-        if (!Array.isArray(data)) return [];
-        return data.map(normalizeUniversity);
+      // Build the HTTP URL for the universities API
+      const httpUrl = UNIVERSITIES_BASE_URL + "?country=" + encodeURIComponent(countryName);
+      // Proxy it over HTTPS
+      const proxyUrl = PROXY_URL + encodeURIComponent(httpUrl);
+      const data = await fetchJson(proxyUrl);
+      if (!Array.isArray(data)) return [];
+      return data.map(normalizeUniversity);
     }
 
     async function loadAllHipoUniversities() {
-        if (cache.hipoAllUniversities) return cache.hipoAllUniversities;
-        try {
-            // Fetch all universities via proxy (no country filter)
-            const allUrl = PROXY_URL + encodeURIComponent(UNIVERSITIES_BASE_URL);
-            const data = await fetchJson(allUrl);
-            const normalized = Array.isArray(data) ? data.map(normalizeUniversity) : [];
-            cache.hipoAllUniversities = normalized;
-            return normalized;
-        } catch (err) {
-            console.warn("Failed to fetch all universities:", err);
-            cache.hipoAllUniversities = [];
-            return [];
-        }
+      if (cache.hipoAllUniversities) return cache.hipoAllUniversities;
+      try {
+        // Fetch all universities via proxy (no country filter)
+        const allUrl = PROXY_URL + encodeURIComponent(UNIVERSITIES_BASE_URL);
+        const data = await fetchJson(allUrl);
+        const normalized = Array.isArray(data) ? data.map(normalizeUniversity) : [];
+        cache.hipoAllUniversities = normalized;
+        return normalized;
+      } catch (err) {
+        console.warn("Failed to fetch all universities:", err);
+        cache.hipoAllUniversities = [];
+        return [];
+      }
     }
 
     function buildHipoCountryMap(allUniversities) {
-        const map = new Map();
-        for (const uni of allUniversities) {
-            if (uni.alpha_two_code && uni.country && !map.has(uni.alpha_two_code)) {
-                map.set(uni.alpha_two_code, uni.country);
-            }
+      const map = new Map();
+      for (const uni of allUniversities) {
+        if (uni.alpha_two_code && uni.country && !map.has(uni.alpha_two_code)) {
+          map.set(uni.alpha_two_code, uni.country);
         }
-        return map;
+      }
+      return map;
     }
 
     async function resolveHipoCountryName(cca2) {
-        if (!cache.hipoCountryMap) {
-            const all = await loadAllHipoUniversities();
-            cache.hipoCountryMap = buildHipoCountryMap(all);
-        }
-        return cache.hipoCountryMap.get(cca2) || null;
+      if (!cache.hipoCountryMap) {
+        const all = await loadAllHipoUniversities();
+        cache.hipoCountryMap = buildHipoCountryMap(all);
+      }
+      return cache.hipoCountryMap.get(cca2) || null;
     }
 
     let universityLoadGeneration = 0;
 
     async function loadUniversities(country) {
-        const cca2 = country.cca2;
-        const commonName = country.name.common;
+      const cca2 = country.cca2;
+      const commonName = country.name.common;
 
-        const myGeneration = ++universityLoadGeneration;
-        const isStale = () => myGeneration !== universityLoadGeneration;
+      const myGeneration = ++universityLoadGeneration;
+      const isStale = () => myGeneration !== universityLoadGeneration;
 
-        universitySelect.disabled = true;
-        submitButton.disabled = true;
-        resultSection.classList.add("hidden");
-        universityCount.textContent = "";
-        showLoading("Loading universities...");
+      universitySelect.disabled = true;
+      submitButton.disabled = true;
+      resultSection.classList.add("hidden");
+      universityCount.textContent = "";
+      showLoading("Loading universities...");
 
-        universitySelect.replaceChildren();
-        const loadingOption = document.createElement("option");
-        loadingOption.value = "";
-        loadingOption.textContent = "Loading universities...";
-        universitySelect.appendChild(loadingOption);
+      universitySelect.replaceChildren();
+      const loadingOption = document.createElement("option");
+      loadingOption.value = "";
+      loadingOption.textContent = "Loading universities...";
+      universitySelect.appendChild(loadingOption);
 
-        try {
-            if (cache.universitiesByCountry.has(cca2)) {
-                const cached = cache.universitiesByCountry.get(cca2);
-                finishUniversityLoad(cached, commonName);
-                return;
-            }
-
-            let results = [];
-            try {
-                results = await fetchUniversitiesByCountryName(commonName);
-            } catch (err) {
-                if (isStale()) return;
-                throw err;
-            }
-
-            if (isStale()) return;
-
-            // If no results, try to resolve country name mismatch
-            if (results.length === 0) {
-                showLoading("Resolving country name differences...");
-                let hipoName = null;
-                try {
-                    hipoName = await resolveHipoCountryName(cca2);
-                } catch (err) {
-                    if (isStale()) return;
-                    console.error("Failed to resolve Hipo country name:", err);
-                }
-
-                if (isStale()) return;
-
-                if (hipoName && hipoName !== commonName) {
-                    showLoading("Loading universities...");
-                    try {
-                        results = await fetchUniversitiesByCountryName(hipoName);
-                    } catch (err) {
-                        if (isStale()) return;
-                        throw err;
-                    }
-                }
-            }
-
-            if (isStale()) return;
-
-            cache.universitiesByCountry.set(cca2, results);
-            finishUniversityLoad(results, commonName);
-        } catch (err) {
-            if (isStale()) return;
-            console.error("Failed to load universities:", err);
-            universitySelect.replaceChildren();
-            const failOption = document.createElement("option");
-            failOption.value = "";
-            failOption.textContent = "Unable to load universities";
-            universitySelect.appendChild(failOption);
-            showError(friendlyErrorMessage(err, "universities"));
-        } finally {
-            if (!isStale()) hideLoading();
+      try {
+        if (cache.universitiesByCountry.has(cca2)) {
+          const cached = cache.universitiesByCountry.get(cca2);
+          finishUniversityLoad(cached, commonName);
+          return;
         }
+
+        let results = [];
+        try {
+          results = await fetchUniversitiesByCountryName(commonName);
+        } catch (err) {
+          if (isStale()) return;
+          throw err;
+        }
+
+        if (isStale()) return;
+
+        // If no results, try to resolve country name mismatch
+        if (results.length === 0) {
+          showLoading("Resolving country name differences...");
+          let hipoName = null;
+          try {
+            hipoName = await resolveHipoCountryName(cca2);
+          } catch (err) {
+            if (isStale()) return;
+            console.error("Failed to resolve Hipo country name:", err);
+          }
+
+          if (isStale()) return;
+
+          if (hipoName && hipoName !== commonName) {
+            showLoading("Loading universities...");
+            try {
+              results = await fetchUniversitiesByCountryName(hipoName);
+            } catch (err) {
+              if (isStale()) return;
+              throw err;
+            }
+          }
+        }
+
+        if (isStale()) return;
+
+        cache.universitiesByCountry.set(cca2, results);
+        finishUniversityLoad(results, commonName);
+      } catch (err) {
+        if (isStale()) return;
+        console.error("Failed to load universities:", err);
+        universitySelect.replaceChildren();
+        const failOption = document.createElement("option");
+        failOption.value = "";
+        failOption.textContent = "Unable to load universities";
+        universitySelect.appendChild(failOption);
+        showError(friendlyErrorMessage(err, "universities"));
+      } finally {
+        if (!isStale()) hideLoading();
+      }
     }
 
     function finishUniversityLoad(rawResults, commonName) {
-        const deduped = deduplicateUniversities(rawResults);
-        const sorted = sortUniversities(deduped);
+      const deduped = deduplicateUniversities(rawResults);
+      const sorted = sortUniversities(deduped);
 
-        universitySelect.replaceChildren();
+      universitySelect.replaceChildren();
 
-        if (sorted.length === 0) {
-            const emptyOption = document.createElement("option");
-            emptyOption.value = "";
-            emptyOption.textContent = "No universities found";
-            universitySelect.appendChild(emptyOption);
-            universitySelect.disabled = true;
-            submitButton.disabled = true;
-            universityCount.textContent = "";
-            showError("No universities were found for this country.");
-            hideLoading();
-            return;
-        }
-
-        const placeholder = document.createElement("option");
-        placeholder.value = "";
-        placeholder.textContent = "Select a university";
-        universitySelect.appendChild(placeholder);
-
-        const fragment = document.createDocumentFragment();
-        sorted.forEach((uni, index) => {
-            const option = document.createElement("option");
-            const stableValue = uni.name || uni.domains[0] || String(index);
-            option.value = stableValue;
-            option.textContent = uni.name;
-            option.dataset.index = String(index);
-            fragment.appendChild(option);
-        });
-        universitySelect.appendChild(fragment);
-        universitySelect._records = sorted;
-
-        universitySelect.disabled = false;
-        universityCount.textContent = sorted.length + (sorted.length === 1 ? " university found" : " universities found");
-        showSuccess("Universities loaded for " + commonName + ".");
+      if (sorted.length === 0) {
+        const emptyOption = document.createElement("option");
+        emptyOption.value = "";
+        emptyOption.textContent = "No universities found";
+        universitySelect.appendChild(emptyOption);
+        universitySelect.disabled = true;
+        submitButton.disabled = true;
+        universityCount.textContent = "";
+        showError("No universities were found for this country.");
         hideLoading();
+        return;
+      }
+
+      const placeholder = document.createElement("option");
+      placeholder.value = "";
+      placeholder.textContent = "Select a university";
+      universitySelect.appendChild(placeholder);
+
+      const fragment = document.createDocumentFragment();
+      sorted.forEach((uni, index) => {
+        const option = document.createElement("option");
+        const stableValue = uni.name || uni.domains[0] || String(index);
+        option.value = stableValue;
+        option.textContent = uni.name;
+        option.dataset.index = String(index);
+        fragment.appendChild(option);
+      });
+      universitySelect.appendChild(fragment);
+      universitySelect._records = sorted;
+
+      universitySelect.disabled = false;
+      universityCount.textContent = sorted.length + (sorted.length === 1 ? " university found" : " universities found");
+      showSuccess("Universities loaded for " + commonName + ".");
+      hideLoading();
     }
 
     // ---------------------------------------------------------------------
     // Event handlers
     // ---------------------------------------------------------------------
     countrySelect.addEventListener("change", () => {
-        selectedUniversityRecord = null;
-        submitButton.disabled = true;
-        resultSection.classList.add("hidden");
+      selectedUniversityRecord = null;
+      submitButton.disabled = true;
+      resultSection.classList.add("hidden");
 
-        const cca2 = countrySelect.value;
-        if (!cca2) {
-            universitySelect.replaceChildren();
-            const placeholder = document.createElement("option");
-            placeholder.value = "";
-            placeholder.textContent = "Select a country first";
-            universitySelect.appendChild(placeholder);
-            universitySelect.disabled = true;
-            universityCount.textContent = "";
-            clearStatus();
-            return;
-        }
-
-        const country = getCountryByCca2(cca2);
-        if (!country) {
-            showError("Unable to load universities for this country.");
-            return;
-        }
-        loadUniversities(country);
-    });
-
-    universitySelect.addEventListener("change", () => {
-        const records = universitySelect._records || [];
-        const selectedOption = universitySelect.selectedOptions[0];
-        const index = selectedOption ? Number(selectedOption.dataset.index) : NaN;
-        selectedUniversityRecord = Number.isInteger(index) ? records[index] || null : null;
-        submitButton.disabled = !selectedUniversityRecord;
-    });
-
-    selectionForm.addEventListener("submit", (event) => {
-        event.preventDefault();
-
-        const cca2 = countrySelect.value;
-        const country = getCountryByCca2(cca2);
-
-        if (!country) {
-            showError("Please select a valid country.");
-            return;
-        }
-        if (!selectedUniversityRecord) {
-            showError("Please select a university.");
-            return;
-        }
-
-        selectedCountryOutput.textContent = country.name.common;
-        selectedUniversityOutput.textContent = selectedUniversityRecord.name +
-        (selectedUniversityRecord.country ? " (" + selectedUniversityRecord.country + ")" : "");
-
-        const firstWebPage = selectedUniversityRecord.webPages && selectedUniversityRecord.webPages[0];
-        if (isValidHttpUrl(firstWebPage)) {
-            resultLink.href = firstWebPage;
-            resultLinkWrap.classList.remove("hidden");
-        } else {
-            resultLink.removeAttribute("href");
-            resultLinkWrap.classList.add("hidden");
-        }
-
-        resultSection.classList.remove("hidden");
-        showSuccess("Selection confirmed.");
-        initIcons();
-
-        if (typeof resultSection.scrollIntoView === "function") {
-            resultSection.scrollIntoView({ behavior: "smooth", block: "start" });
-        }
-    });
-
-    resetButton.addEventListener("click", () => {
-        universityLoadGeneration++;
-        selectedUniversityRecord = null;
-
-        if (cache.countries) {
-            populateCountrySelect(cache.countries);
-            countrySelect.disabled = false;
-        }
-        countrySelect.value = "";
-
+      const cca2 = countrySelect.value;
+      if (!cca2) {
         universitySelect.replaceChildren();
         const placeholder = document.createElement("option");
         placeholder.value = "";
@@ -696,12 +622,86 @@ aria-labelledby="resultHeading"
         universitySelect.appendChild(placeholder);
         universitySelect.disabled = true;
         universityCount.textContent = "";
-
-        submitButton.disabled = true;
-        resultSection.classList.add("hidden");
-        resultLinkWrap.classList.add("hidden");
         clearStatus();
-        hideLoading();
+        return;
+      }
+
+      const country = getCountryByCca2(cca2);
+      if (!country) {
+        showError("Unable to load universities for this country.");
+        return;
+      }
+      loadUniversities(country);
+    });
+
+    universitySelect.addEventListener("change", () => {
+      const records = universitySelect._records || [];
+      const selectedOption = universitySelect.selectedOptions[0];
+      const index = selectedOption ? Number(selectedOption.dataset.index) : NaN;
+      selectedUniversityRecord = Number.isInteger(index) ? records[index] || null : null;
+      submitButton.disabled = !selectedUniversityRecord;
+    });
+
+    selectionForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      const cca2 = countrySelect.value;
+      const country = getCountryByCca2(cca2);
+
+      if (!country) {
+        showError("Please select a valid country.");
+        return;
+      }
+      if (!selectedUniversityRecord) {
+        showError("Please select a university.");
+        return;
+      }
+
+      selectedCountryOutput.textContent = country.name.common;
+      selectedUniversityOutput.textContent = selectedUniversityRecord.name +
+        (selectedUniversityRecord.country ? " (" + selectedUniversityRecord.country + ")" : "");
+
+      const firstWebPage = selectedUniversityRecord.webPages && selectedUniversityRecord.webPages[0];
+      if (isValidHttpUrl(firstWebPage)) {
+        resultLink.href = firstWebPage;
+        resultLinkWrap.classList.remove("hidden");
+      } else {
+        resultLink.removeAttribute("href");
+        resultLinkWrap.classList.add("hidden");
+      }
+
+      resultSection.classList.remove("hidden");
+      showSuccess("Selection confirmed.");
+      initIcons();
+
+      if (typeof resultSection.scrollIntoView === "function") {
+        resultSection.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    });
+
+    resetButton.addEventListener("click", () => {
+      universityLoadGeneration++;
+      selectedUniversityRecord = null;
+
+      if (cache.countries) {
+        populateCountrySelect(cache.countries);
+        countrySelect.disabled = false;
+      }
+      countrySelect.value = "";
+
+      universitySelect.replaceChildren();
+      const placeholder = document.createElement("option");
+      placeholder.value = "";
+      placeholder.textContent = "Select a country first";
+      universitySelect.appendChild(placeholder);
+      universitySelect.disabled = true;
+      universityCount.textContent = "";
+
+      submitButton.disabled = true;
+      resultSection.classList.add("hidden");
+      resultLinkWrap.classList.add("hidden");
+      clearStatus();
+      hideLoading();
     });
 
     // ---------------------------------------------------------------------
@@ -709,6 +709,6 @@ aria-labelledby="resultHeading"
     // ---------------------------------------------------------------------
     initIcons();
     loadCountries().then(initIcons);
-</script>
+  </script>
 </body>
 </html>
