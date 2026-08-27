@@ -155,7 +155,7 @@
     // Constants
     // ---------------------------------------------------------------------
     const COUNTRIES_API_URL = "https://countriesnow.space/api/v0.1/countries";
-    const UNIVERSITIES_URL = "http://universities.hipolabs.com/search";
+    const UNIVERSITIES_URL = "https://universities.hipolabs.com/search";   // HTTPS – no mixed content
     const REQUEST_TIMEOUT_MS = 10000;
 
     // ---------------------------------------------------------------------
@@ -204,15 +204,6 @@
     // ---------------------------------------------------------------------
     // Networking helpers
     // ---------------------------------------------------------------------
-    // NOTE: this deliberately does NOT pass an AbortSignal into fetch()'s
-    // options. Some preview/sandbox environments proxy fetch() calls through
-    // postMessage, and AbortSignal objects cannot be structured-cloned —
-    // passing one causes a DataCloneError that surfaces as a generic network
-    // failure. Timeouts are instead implemented with a manual Promise race,
-    // and superseded requests are handled cooperatively via a "generation"
-    // counter (see loadUniversities) rather than a true fetch abort. This
-    // keeps the same user-facing behavior (stale responses are discarded)
-    // while working in both normal browser tabs and proxied preview frames.
     function fetchWithTimeout(url, timeoutMs = REQUEST_TIMEOUT_MS) {
       return new Promise((resolve, reject) => {
         let settled = false;
@@ -382,7 +373,7 @@
     }
 
     // ---------------------------------------------------------------------
-    // Country loading (now live from CountriesNow API)
+    // Country loading (live from CountriesNow API)
     // ---------------------------------------------------------------------
     async function loadCountries() {
       showLoading("Loading countries...");
@@ -394,7 +385,6 @@
       countrySelect.appendChild(loadingOption);
 
       try {
-        // Check cache first
         if (cache.countries) {
           populateCountrySelect(cache.countries);
           countrySelect.disabled = false;
@@ -403,15 +393,13 @@
           return;
         }
 
-        // Fetch from CountriesNow API
         const data = await fetchJson(COUNTRIES_API_URL);
 
-        // The API returns: { error: false, msg: "some message", data: [ { name: "Afghanistan", code: "AF", ... }, ... ] }
         if (!data || !data.data || !Array.isArray(data.data)) {
           throw new Error("INVALID_RESPONSE");
         }
 
-        // Transform the data to match the expected structure: { name: { common: "..." }, cca2: "..." }
+        // Transform to { name: { common: ... }, cca2: ... }
         const countries = data.data.map(item => ({
           name: { common: item.name || item.country || "Unknown" },
           cca2: item.code || item.iso2 || ""
@@ -499,7 +487,6 @@
       return cache.hipoCountryMap.get(cca2) || null;
     }
 
-    // Generation counter used for cooperative cancellation
     let universityLoadGeneration = 0;
 
     async function loadUniversities(country) {
@@ -699,8 +686,6 @@
     });
 
     resetButton.addEventListener("click", () => {
-      // Bump the generation counter so any in-flight university request
-      // discards its result instead of updating the (now-reset) UI.
       universityLoadGeneration++;
       selectedUniversityRecord = null;
 
