@@ -1,714 +1,875 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Country &amp; University Selector</title>
-    <meta name="description" content="Pick a country and browse its universities, loaded live from public REST APIs." />
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scholar Registration</title>
+
     <style>
-        :focus-visible {
-            outline: 2px solid #1a73e8;
-            outline-offset: 2px;
+        :root {
+            --bg: #f6f7f9;
+            --card: #ffffff;
+            --text: #111827;
+            --muted: #6b7280;
+            --border: #e5e7eb;
+            --border-dark: #d1d5db;
+            --primary: #111827;
+            --primary-hover: #000000;
+            --success-bg: #ecfdf5;
+            --success-text: #047857;
+            --error-bg: #fef2f2;
+            --error-text: #b91c1c;
+            --warning-bg: #fffbeb;
+            --warning-text: #92400e;
+            --warning-border: #fcd34d;
+            --radius: 14px;
         }
-        .spin {
-            animation: spin 1s linear infinite;
+
+        * {
+            box-sizing: border-box;
         }
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+
+        html {
+            scroll-behavior: smooth;
         }
-        @media (prefers-reduced-motion: reduce) {
-            .spin { animation: none; }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         }
-        select:disabled, button:disabled {
+
+        button, input, select {
+            font: inherit;
+        }
+
+        .page {
+            width: 100%;
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 38px 18px 60px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .logo {
+            width: 54px;
+            height: 54px;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 16px;
+            background: var(--primary);
+            color: white;
+            font-size: 25px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 29px;
+            line-height: 1.2;
+            letter-spacing: -0.8px;
+        }
+
+        .header p {
+            margin: 9px 0 0;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 26px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.045);
+        }
+
+        .status {
+            display: none;
+            padding: 12px 14px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            line-height: 1.45;
+        }
+
+        .status.success {
+            display: block;
+            background: var(--success-bg);
+            color: var(--success-text);
+        }
+
+        .status.error {
+            display: block;
+            background: var(--error-bg);
+            color: var(--error-text);
+        }
+
+        .status.warning {
+            display: block;
+            background: var(--warning-bg);
+            color: var(--warning-text);
+            border: 1px solid var(--warning-border);
+        }
+
+        .field {
+            margin-bottom: 20px;
+        }
+
+        .field:last-of-type {
+            margin-bottom: 22px;
+        }
+
+        .label-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        label {
+            font-size: 13px;
+            font-weight: 650;
+            color: #374151;
+        }
+
+        .required {
+            color: #9ca3af;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        input, select {
+            width: 100%;
+            height: 49px;
+            padding: 0 14px;
+            border: 1px solid var(--border-dark);
+            border-radius: 11px;
+            background: white;
+            color: var(--text);
+            outline: none;
+            transition: border-color .18s ease, box-shadow .18s ease;
+        }
+
+        input::placeholder {
+            color: #9ca3af;
+        }
+
+        input:focus, select:focus {
+            border-color: #111827;
+            box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.07);
+        }
+
+        select:disabled {
+            color: #9ca3af;
+            background: #f9fafb;
             cursor: not-allowed;
-            opacity: 0.6;
+        }
+
+        .select-wrapper {
+            position: relative;
+        }
+
+        .select-wrapper select {
+            appearance: none;
+            padding-right: 42px;
+        }
+
+        .select-arrow {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .helper {
+            min-height: 18px;
+            margin-top: 6px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .helper.warning {
+            color: var(--warning-text);
+        }
+
+        .helper.error {
+            color: var(--error-text);
+        }
+
+        .primary-button {
+            width: 100%;
+            height: 50px;
+            border: 0;
+            border-radius: 11px;
+            background: var(--primary);
+            color: white;
+            font-size: 14px;
+            font-weight: 650;
+            cursor: pointer;
+            transition: background .18s ease, transform .1s ease;
+        }
+
+        .primary-button:hover {
+            background: var(--primary-hover);
+        }
+
+        .primary-button:active {
+            transform: translateY(1px);
+        }
+
+        .primary-button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 25px 0 18px;
+        }
+
+        .data-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .data-info {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .data-title {
+            font-size: 13px;
+            font-weight: 650;
+        }
+
+        .data-count {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .secondary-button {
+            height: 39px;
+            padding: 0 13px;
+            border: 1px solid var(--border-dark);
+            border-radius: 9px;
+            background: white;
+            color: #374151;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .secondary-button:hover {
+            background: #f9fafb;
+        }
+
+        .loading {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .spinner {
+            width: 13px;
+            height: 13px;
+            border: 2px solid #e5e7eb;
+            border-top-color: #111827;
+            border-radius: 50%;
+            animation: spin .7s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .retry-button {
+            background: none;
+            border: none;
+            color: #2563eb;
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 12px;
+            padding: 0;
+            margin-left: 6px;
+        }
+
+        .retry-button:hover {
+            color: #1d4ed8;
+        }
+
+        @media (max-width: 600px) {
+            .page {
+                padding: 24px 13px 40px;
+            }
+            .card {
+                padding: 20px;
+                border-radius: 17px;
+            }
+            .header h1 {
+                font-size: 25px;
+            }
+            .data-bar {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+            .actions {
+                width: 100%;
+            }
+            .secondary-button {
+                flex: 1;
+            }
         }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-900 min-h-screen antialiased">
-    <div class="max-w-[600px] mx-auto px-4 py-10 sm:py-16">
+<body>
 
-        <!-- Header -->
-        <header class="mb-8 text-center">
-            <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-white border border-gray-200 mb-4">
-                <i data-lucide="globe" class="w-6 h-6 text-gray-700" aria-hidden="true"></i>
-            </div>
-            <h1 class="text-2xl font-medium tracking-tight text-gray-900">Country &amp; University Selector</h1>
-            <p class="mt-2 text-sm text-gray-500">Choose a country to browse its universities, loaded live from public data.</p>
-        </header>
+<div class="page">
+    <header class="header">
+        <div class="logo" aria-hidden="true">🎓</div>
+        <h1>Scholar Registration</h1>
+        <p>Select your country and university to continue</p>
+    </header>
 
-        <!-- Main form card -->
-        <main class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 sm:p-8">
-            <form id="selectionForm" novalidate>
+    <main class="card">
+        <div id="status" class="status" role="alert"></div>
 
-                <!-- Country field -->
-                <div class="mb-5">
-                    <label for="countrySelect" class="block text-sm font-medium text-gray-700 mb-1.5">Country</label>
-                    <div class="relative">
-                        <select
-                        id="countrySelect"
-                        name="country"
-                        class="w-full appearance-none bg-white border border-gray-300 rounded-md py-2.5 pl-3 pr-9 text-sm text-gray-900 focus-visible:outline-none disabled:bg-gray-50"
-                        aria-describedby="statusMessage"
-                        disabled
-                        >
+        <form id="registrationForm" novalidate>
+            <!-- COUNTRY -->
+            <div class="field">
+                <div class="label-row">
+                    <label for="country">Country</label>
+                    <span class="required">Required</span>
+                </div>
+                <div class="select-wrapper">
+                    <select id="country" name="country" required disabled>
                         <option value="">Loading countries...</option>
                     </select>
-                    <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true"></i>
+                    <span class="select-arrow" aria-hidden="true">⌄</span>
                 </div>
+                <div id="countryHelper" class="helper"></div>
             </div>
 
-            <!-- University field -->
-            <div class="mb-5">
-                <label for="universitySelect" class="block text-sm font-medium text-gray-700 mb-1.5">University</label>
-                <div class="relative">
-                    <select
-                    id="universitySelect"
-                    name="university"
-                    class="w-full appearance-none bg-white border border-gray-300 rounded-md py-2.5 pl-3 pr-9 text-sm text-gray-900 focus-visible:outline-none disabled:bg-gray-50"
-                    aria-describedby="statusMessage universityCount"
-                    disabled
-                    >
-                    <option value="">Select a country first</option>
-                </select>
-                <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true"></i>
+            <!-- UNIVERSITY -->
+            <div class="field">
+                <div class="label-row">
+                    <label for="university">University</label>
+                    <span class="required">Required</span>
+                </div>
+                <div class="select-wrapper">
+                    <select id="university" name="university" required disabled>
+                        <option value="">Select a country first</option>
+                    </select>
+                    <span class="select-arrow" aria-hidden="true">⌄</span>
+                </div>
+                <div id="universityHelper" class="helper"></div>
             </div>
-            <p id="universityCount" class="mt-1.5 text-xs text-gray-400"></p>
+
+            <!-- NAME -->
+            <div class="field">
+                <div class="label-row">
+                    <label for="name">Full name</label>
+                    <span class="required">Required</span>
+                </div>
+                <input id="name" name="name" type="text" autocomplete="name" placeholder="Enter your full name" required maxlength="120">
+            </div>
+
+            <!-- PHONE -->
+            <div class="field">
+                <div class="label-row">
+                    <label for="phone">Phone number</label>
+                    <span class="required">Required</span>
+                </div>
+                <input id="phone" name="phone" type="tel" autocomplete="tel" placeholder="+257 79 123 456" required maxlength="30">
+            </div>
+
+            <!-- SUBMIT -->
+            <button id="submitButton" class="primary-button" type="submit">
+                Save Registration
+            </button>
+        </form>
+
+        <div class="divider"></div>
+
+        <!-- DATA ACTIONS -->
+        <div class="data-bar">
+            <div class="data-info">
+                <span class="data-title">Local registrations</span>
+                <span id="registrationCount" class="data-count">0 records</span>
+            </div>
+
+            <div class="actions">
+                <button type="button" id="exportButton" class="secondary-button">↓ Export JSON</button>
+                <button type="button" id="clearButton" class="secondary-button">Clear</button>
+            </div>
         </div>
-
-        <!-- Loading indicator -->
-        <div id="loadingIndicator" class="flex items-center gap-2 text-sm text-gray-500 mb-4" aria-hidden="true">
-            <i data-lucide="loader-circle" class="w-4 h-4 spin"></i>
-            <span>Loading countries...</span>
-        </div>
-
-        <!-- Status message -->
-        <p id="statusMessage" class="text-sm mb-5 min-h-[1.25rem]" aria-live="polite"></p>
-
-        <!-- Actions -->
-        <div class="flex items-center gap-3">
-            <button
-            type="submit"
-            id="submitButton"
-            class="inline-flex items-center gap-2 bg-gray-900 text-white text-sm font-medium rounded-md px-4 py-2.5 hover:bg-gray-800 disabled:hover:bg-gray-900 focus-visible:outline-none transition-colors"
-            disabled
-            >
-            <i data-lucide="check-circle-2" class="w-4 h-4" aria-hidden="true"></i>
-            Submit
-        </button>
-        <button
-        type="button"
-        id="resetButton"
-        class="inline-flex items-center gap-2 bg-white text-gray-700 text-sm font-medium rounded-md px-4 py-2.5 border border-gray-300 hover:bg-gray-50 focus-visible:outline-none transition-colors"
-        >
-        <i data-lucide="rotate-ccw" class="w-4 h-4" aria-hidden="true"></i>
-        Reset
-    </button>
-</div>
-</form>
-</main>
-
-<!-- Result panel -->
-<section
-id="resultSection"
-class="mt-6 bg-white border border-gray-200 rounded-lg shadow-sm p-6 sm:p-8 hidden"
-aria-labelledby="resultHeading"
->
-<div class="flex items-center gap-2 mb-4">
-    <i data-lucide="graduation-cap" class="w-5 h-5 text-gray-700" aria-hidden="true"></i>
-    <h2 id="resultHeading" class="text-base font-medium text-gray-900">Selection</h2>
-</div>
-<dl class="space-y-3 text-sm">
-    <div class="flex flex-col sm:flex-row sm:items-baseline sm:gap-2">
-        <dt class="text-gray-500 w-28 shrink-0">Country</dt>
-        <dd id="selectedCountryOutput" class="text-gray-900 font-medium"></dd>
-    </div>
-    <div class="flex flex-col sm:flex-row sm:items-baseline sm:gap-2">
-        <dt class="text-gray-500 w-28 shrink-0">University</dt>
-        <dd id="selectedUniversityOutput" class="text-gray-900 font-medium"></dd>
-    </div>
-</dl>
-<div id="resultLinkWrap" class="mt-4 hidden">
-    <a
-    id="resultLink"
-    href="#"
-    target="_blank"
-    rel="noopener noreferrer"
-    class="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 hover:underline"
-    >
-    Open university website
-    <i data-lucide="external-link" class="w-3.5 h-3.5" aria-hidden="true"></i>
-</a>
-</div>
-</section>
-
-<footer class="mt-10 text-center text-xs text-gray-400">
-    Data from CountriesNow and the Hipo Universities API (via CORS proxy).
-</footer>
+    </main>
 </div>
 
-<script type="module">
-    // ---------------------------------------------------------------------
-    // Constants
-    // ---------------------------------------------------------------------
-    const COUNTRIES_API_URL = "https://countriesnow.space/api/v0.1/countries";
-    // Use a reliable CORS proxy over HTTPS.
-    const PROXY_URL = "https://api.cors.lol/?url="; // cors.lol proxy[reference:2]
-    const UNIVERSITIES_BASE_URL = "http://universities.hipolabs.com/search"; // HTTP, but we'll proxy it
-    const REQUEST_TIMEOUT_MS = 15000; // Increased timeout for proxy
+<script>
+/*
+==========================================================
+CONFIGURATION
+==========================================================
+*/
+// ⚠️ IMPORTANT: Replace this URL with your deployed Cloudflare Worker URL.
+const WORKER_URL = "https://your-worker-name.your-subdomain.workers.dev";
 
-    // ---------------------------------------------------------------------
-    // Cache
-    // ---------------------------------------------------------------------
-    const cache = {
-        countries: null,
-        universitiesByCountry: new Map(),
-        hipoCountryMap: null,
-        hipoAllUniversities: null
-    };
+const CONFIG = {
+    apiBase: WORKER_URL,
+    storageKey: "scholar_registrations_v1"
+};
 
-    // ---------------------------------------------------------------------
-    // DOM references
-    // ---------------------------------------------------------------------
-    const countrySelect = document.getElementById("countrySelect");
-    const universitySelect = document.getElementById("universitySelect");
-    const selectionForm = document.getElementById("selectionForm");
-    const submitButton = document.getElementById("submitButton");
-    const resetButton = document.getElementById("resetButton");
-    const loadingIndicator = document.getElementById("loadingIndicator");
-    const statusMessage = document.getElementById("statusMessage");
-    const resultSection = document.getElementById("resultSection");
-    const selectedCountryOutput = document.getElementById("selectedCountryOutput");
-    const selectedUniversityOutput = document.getElementById("selectedUniversityOutput");
-    const universityCount = document.getElementById("universityCount");
-    const resultLinkWrap = document.getElementById("resultLinkWrap");
-    const resultLink = document.getElementById("resultLink");
+/*
+==========================================================
+DOM ELEMENTS
+==========================================================
+*/
+const countrySelect = document.getElementById("country");
+const universitySelect = document.getElementById("university");
+const countryHelper = document.getElementById("countryHelper");
+const universityHelper = document.getElementById("universityHelper");
+const nameInput = document.getElementById("name");
+const phoneInput = document.getElementById("phone");
+const form = document.getElementById("registrationForm");
+const statusBox = document.getElementById("status");
+const submitButton = document.getElementById("submitButton");
+const exportButton = document.getElementById("exportButton");
+const clearButton = document.getElementById("clearButton");
+const registrationCount = document.getElementById("registrationCount");
 
-    let selectedUniversityRecord = null;
+/*
+==========================================================
+APPLICATION STATE
+==========================================================
+*/
+let countries = [];
+let selectedCountry = null;
+let universities = [];
+let universityRequestController = null;
 
-    // ---------------------------------------------------------------------
-    // Icon initialization
-    // ---------------------------------------------------------------------
-    function initIcons() {
-        try {
-            if (window.lucide && typeof window.lucide.createIcons === "function") {
-                window.lucide.createIcons();
-            }
-        } catch (err) {
-            console.error("Lucide icon initialization failed:", err);
-        }
+/*
+==========================================================
+UTILITY: STATUS
+==========================================================
+*/
+function showStatus(message, type) {
+    statusBox.textContent = message;
+    statusBox.className = `status ${type}`;
+}
+
+function hideStatus() {
+    statusBox.textContent = "";
+    statusBox.className = "status";
+}
+
+/*
+==========================================================
+UTILITY: LOADING
+==========================================================
+*/
+function setUniversityLoading(isLoading) {
+    if (isLoading) {
+        universityHelper.innerHTML = `
+            <span class="loading">
+                <span class="spinner"></span>
+                Loading universities...
+            </span>
+        `;
+    } else {
+        universityHelper.textContent = "";
     }
+}
 
-    // ---------------------------------------------------------------------
-    // Networking helpers
-    // ---------------------------------------------------------------------
-    function fetchWithTimeout(url, timeoutMs = REQUEST_TIMEOUT_MS) {
-        return new Promise((resolve, reject) => {
-            let settled = false;
-            const timeoutId = setTimeout(() => {
-                if (!settled) {
-                    settled = true;
-                    reject(new Error("TIMEOUT_OR_ABORTED"));
-                }
-            }, timeoutMs);
+/*
+==========================================================
+LOAD COUNTRIES - From Cloudflare Worker
+==========================================================
+*/
+async function loadCountries() {
+    countrySelect.disabled = true;
+    countrySelect.innerHTML = `<option value="">Loading countries...</option>`;
 
-            fetch(url)
-            .then((response) => {
-                if (!settled) {
-                    settled = true;
-                    clearTimeout(timeoutId);
-                    resolve(response);
-                }
-            })
-            .catch((err) => {
-                if (!settled) {
-                    settled = true;
-                    clearTimeout(timeoutId);
-                    reject(err);
-                }
-            });
+    try {
+        const response = await fetch(`${CONFIG.apiBase}/api/countries`, {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            }
         });
-    }
-
-    async function fetchJson(url) {
-        let response;
-        try {
-            response = await fetchWithTimeout(url);
-        } catch (err) {
-            if (err && err.message === "TIMEOUT_OR_ABORTED") {
-                throw err;
-            }
-            console.error("Network error fetching", url, err);
-            throw new Error("NETWORK_ERROR");
-        }
 
         if (!response.ok) {
-            console.error("HTTP error", response.status, url);
-            throw new Error("HTTP_" + response.status);
+            throw new Error(`API returned ${response.status}: ${response.statusText}`);
         }
 
-        try {
-            const data = await response.json();
-            return data;
-        } catch (err) {
-            console.error("Invalid JSON from", url, err);
-            throw new Error("INVALID_JSON");
+        const data = await response.json();
+
+        // Worker returns the raw CountriesNow response: { error, msg, data }
+        if (data.error !== false || !data.data || !Array.isArray(data.data)) {
+            throw new Error(data.msg || "Invalid response from Countries API");
         }
-    }
 
-    // ---------------------------------------------------------------------
-    // Status UI helpers
-    // ---------------------------------------------------------------------
-    function showLoading(message) {
-        loadingIndicator.setAttribute("aria-hidden", "false");
-        loadingIndicator.classList.remove("hidden");
-        loadingIndicator.querySelector("span").textContent = message;
-        selectionForm.setAttribute("aria-busy", "true");
-    }
+        countries = data.data
+            .filter(country => country && country.country && country.iso2)
+            .map(country => ({
+                name: country.country,
+                code: country.iso2.toUpperCase(),
+                iso3: country.iso3 || "",
+                cities: Array.isArray(country.cities) ? country.cities : [],
+                flag: "🌍"
+            }))
+            .sort((a, b) => a.name.localeCompare(b.name));
 
-    function hideLoading() {
-        loadingIndicator.classList.add("hidden");
-        loadingIndicator.setAttribute("aria-hidden", "true");
-        selectionForm.setAttribute("aria-busy", "false");
-    }
-
-    function showError(message) {
-        statusMessage.textContent = message;
-        statusMessage.classList.remove("text-green-700", "text-gray-500");
-        statusMessage.classList.add("text-red-600");
-    }
-
-    function showSuccess(message) {
-        statusMessage.textContent = message;
-        statusMessage.classList.remove("text-red-600", "text-gray-500");
-        statusMessage.classList.add("text-green-700");
-    }
-
-    function showNeutralStatus(message) {
-        statusMessage.textContent = message;
-        statusMessage.classList.remove("text-red-600", "text-green-700");
-        statusMessage.classList.add("text-gray-500");
-    }
-
-    function clearStatus() {
-        statusMessage.textContent = "";
-        statusMessage.classList.remove("text-red-600", "text-green-700", "text-gray-500");
-    }
-
-    function friendlyErrorMessage(err, context) {
-        const code = err && err.message ? err.message : "";
-        if (code === "TIMEOUT_OR_ABORTED") return "The request timed out. Please try again.";
-        if (code === "NETWORK_ERROR") return context === "countries" ? "Unable to load countries." : "Unable to load universities.";
-        if (code.startsWith("HTTP_")) {
-            const status = code.replace("HTTP_", "");
-            if (status === "429") return "Rate limited. Please try again shortly.";
-            if (status === "404") return "No data found.";
-            if (status === "400") return "Invalid request.";
-            if (status === "500") return "Server error.";
-            return "API error.";
+        if (!countries.length) {
+            throw new Error("No countries returned from API");
         }
-        if (code === "INVALID_JSON") return "Unexpected response from server.";
-        return context === "countries" ? "Unable to load countries." : "Unable to load universities.";
-    }
 
-    // ---------------------------------------------------------------------
-    // Data helpers
-    // ---------------------------------------------------------------------
-    function sortCountries(countries) {
-        return [...countries].sort((a, b) => {
-            const nameA = (a && a.name && a.name.common) || "";
-            const nameB = (b && b.name && b.name.common) || "";
-            return nameA.localeCompare(nameB);
-        });
-    }
-
-    function normalizeUniversity(raw) {
-        return {
-            name: typeof raw.name === "string" && raw.name ? raw.name : "Unnamed university",
-            country: typeof raw.country === "string" ? raw.country : "",
-            alpha_two_code: typeof raw.alpha_two_code === "string" ? raw.alpha_two_code : "",
-            stateProvince: raw["state-province"] || null,
-            domains: Array.isArray(raw.domains) ? raw.domains : [],
-            webPages: Array.isArray(raw.web_pages) ? raw.web_pages : []
-        };
-    }
-
-    function sortUniversities(universities) {
-        return [...universities].sort((a, b) => a.name.localeCompare(b.name));
-    }
-
-    function deduplicateUniversities(universities) {
-        const seen = new Set();
-        const result = [];
-        for (const uni of universities) {
-            const key = (uni.name + "|" + (uni.domains[0] || "")).toLowerCase();
-            if (!seen.has(key)) {
-                seen.add(key);
-                result.push(uni);
-            }
-        }
-        return result;
-    }
-
-    function isValidHttpUrl(value) {
-        if (typeof value !== "string" || !value) return false;
-        try {
-            const url = new URL(value);
-            return url.protocol === "http:" || url.protocol === "https:";
-        } catch (err) {
-            return false;
-        }
-    }
-
-    // ---------------------------------------------------------------------
-    // Country loading
-    // ---------------------------------------------------------------------
-    async function loadCountries() {
-        showLoading("Loading countries...");
-        countrySelect.disabled = true;
-        countrySelect.replaceChildren();
-        const loadingOption = document.createElement("option");
-        loadingOption.value = "";
-        loadingOption.textContent = "Loading countries...";
-        countrySelect.appendChild(loadingOption);
-
-        try {
-            if (cache.countries) {
-                populateCountrySelect(cache.countries);
-                countrySelect.disabled = false;
-                showNeutralStatus("Select a country to see its universities.");
-                hideLoading();
-                return;
-            }
-
-            const data = await fetchJson(COUNTRIES_API_URL);
-            if (!data || !data.data || !Array.isArray(data.data)) {
-                throw new Error("INVALID_RESPONSE");
-            }
-
-            const countries = data.data.map(item => ({
-                name: { common: item.name || item.country || "Unknown" },
-                cca2: item.code || item.iso2 || ""
-            })).filter(c => c.cca2 && c.name.common);
-
-            if (countries.length === 0) throw new Error("EMPTY_RESPONSE");
-
-            cache.countries = sortCountries(countries);
-            populateCountrySelect(cache.countries);
-            countrySelect.disabled = false;
-            showNeutralStatus("Select a country to see its universities.");
-        } catch (err) {
-            console.error("Failed to load countries:", err);
-            countrySelect.replaceChildren();
-            const failOption = document.createElement("option");
-            failOption.value = "";
-            failOption.textContent = "Failed to load countries";
-            countrySelect.appendChild(failOption);
-            showError(friendlyErrorMessage(err, "countries"));
-        } finally {
-            hideLoading();
-        }
-    }
-
-    function populateCountrySelect(countries) {
-        countrySelect.replaceChildren();
-        const placeholder = document.createElement("option");
-        placeholder.value = "";
-        placeholder.textContent = "Select a country";
-        countrySelect.appendChild(placeholder);
-
-        const fragment = document.createDocumentFragment();
-        for (const country of countries) {
-            if (!country || !country.name || !country.name.common || !country.cca2) continue;
+        countrySelect.innerHTML = `<option value="">Select a country</option>`;
+        countries.forEach(country => {
             const option = document.createElement("option");
-            option.value = country.cca2;
-            option.textContent = country.name.common;
-            fragment.appendChild(option);
+            option.value = country.code;
+            option.textContent = `${country.flag}  ${country.name}`;
+            countrySelect.appendChild(option);
+        });
+
+        countrySelect.disabled = false;
+        countryHelper.textContent = `${countries.length} countries available`;
+
+    } catch (error) {
+        console.error("Countries API error:", error);
+        countrySelect.innerHTML = `<option value="">Unable to load countries</option>`;
+        countryHelper.textContent = error.message || "Could not connect to the countries API.";
+        showStatus(`Unable to load countries: ${error.message}. Please refresh.`, "error");
+    }
+}
+
+/*
+==========================================================
+LOAD UNIVERSITIES - From Cloudflare Worker
+==========================================================
+*/
+async function loadUniversities(country) {
+    // Cancel previous request
+    if (universityRequestController) {
+        universityRequestController.abort();
+    }
+
+    universityRequestController = new AbortController();
+
+    universitySelect.disabled = true;
+    universitySelect.innerHTML = `<option value="">Loading universities...</option>`;
+    setUniversityLoading(true);
+    
+    universityHelper.className = "helper";
+    universityHelper.textContent = "";
+
+    try {
+        const countryName = country.name;
+        const url = new URL(`${CONFIG.apiBase}/api/universities`);
+        url.searchParams.set("country", countryName);
+
+        const response = await fetch(url.toString(), {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            },
+            signal: universityRequestController.signal
+        });
+
+        if (!response.ok) {
+            throw new Error(`University API returned ${response.status}`);
         }
-        countrySelect.appendChild(fragment);
-    }
 
-    function getCountryByCca2(cca2) {
-        if (!cache.countries) return null;
-        return cache.countries.find((c) => c.cca2 === cca2) || null;
-    }
+        const result = await response.json();
 
-    // ---------------------------------------------------------------------
-    // University loading – always via proxy (HTTPS)
-    // ---------------------------------------------------------------------
-    async function fetchUniversitiesByCountryName(countryName) {
-        // Build the HTTP URL for the universities API
-        const httpUrl = UNIVERSITIES_BASE_URL + "?country=" + encodeURIComponent(countryName);
-        // Proxy it over HTTPS using cors.lol[reference:3]
-        const proxyUrl = PROXY_URL + encodeURIComponent(httpUrl);
-        const data = await fetchJson(proxyUrl);
-        if (!Array.isArray(data)) return [];
-        return data.map(normalizeUniversity);
-    }
-
-    async function loadAllHipoUniversities() {
-        if (cache.hipoAllUniversities) return cache.hipoAllUniversities;
-        try {
-            // Fetch all universities via proxy (no country filter)
-            const allUrl = PROXY_URL + encodeURIComponent(UNIVERSITIES_BASE_URL);
-            const data = await fetchJson(allUrl);
-            const normalized = Array.isArray(data) ? data.map(normalizeUniversity) : [];
-            cache.hipoAllUniversities = normalized;
-            return normalized;
-        } catch (err) {
-            console.warn("Failed to fetch all universities:", err);
-            cache.hipoAllUniversities = [];
-            return [];
+        // Worker returns: { data: [...], count, country }
+        if (!result.data || !Array.isArray(result.data)) {
+            throw new Error("Invalid university data format");
         }
-    }
 
-    function buildHipoCountryMap(allUniversities) {
-        const map = new Map();
-        for (const uni of allUniversities) {
-            if (uni.alpha_two_code && uni.country && !map.has(uni.alpha_two_code)) {
-                map.set(uni.alpha_two_code, uni.country);
-            }
-        }
-        return map;
-    }
+        universities = result.data;
 
-    async function resolveHipoCountryName(cca2) {
-        if (!cache.hipoCountryMap) {
-            const all = await loadAllHipoUniversities();
-            cache.hipoCountryMap = buildHipoCountryMap(all);
-        }
-        return cache.hipoCountryMap.get(cca2) || null;
-    }
+        // Populate university select
+        universitySelect.innerHTML = `<option value="">Select a university</option>`;
 
-    let universityLoadGeneration = 0;
-
-    async function loadUniversities(country) {
-        const cca2 = country.cca2;
-        const commonName = country.name.common;
-
-        const myGeneration = ++universityLoadGeneration;
-        const isStale = () => myGeneration !== universityLoadGeneration;
-
-        universitySelect.disabled = true;
-        submitButton.disabled = true;
-        resultSection.classList.add("hidden");
-        universityCount.textContent = "";
-        showLoading("Loading universities...");
-
-        universitySelect.replaceChildren();
-        const loadingOption = document.createElement("option");
-        loadingOption.value = "";
-        loadingOption.textContent = "Loading universities...";
-        universitySelect.appendChild(loadingOption);
-
-        try {
-            if (cache.universitiesByCountry.has(cca2)) {
-                const cached = cache.universitiesByCountry.get(cca2);
-                finishUniversityLoad(cached, commonName);
-                return;
-            }
-
-            let results = [];
-            try {
-                results = await fetchUniversitiesByCountryName(commonName);
-            } catch (err) {
-                if (isStale()) return;
-                throw err;
-            }
-
-            if (isStale()) return;
-
-            // If no results, try to resolve country name mismatch
-            if (results.length === 0) {
-                showLoading("Resolving country name differences...");
-                let hipoName = null;
-                try {
-                    hipoName = await resolveHipoCountryName(cca2);
-                } catch (err) {
-                    if (isStale()) return;
-                    console.error("Failed to resolve Hipo country name:", err);
-                }
-
-                if (isStale()) return;
-
-                if (hipoName && hipoName !== commonName) {
-                    showLoading("Loading universities...");
-                    try {
-                        results = await fetchUniversitiesByCountryName(hipoName);
-                    } catch (err) {
-                        if (isStale()) return;
-                        throw err;
-                    }
-                }
-            }
-
-            if (isStale()) return;
-
-            cache.universitiesByCountry.set(cca2, results);
-            finishUniversityLoad(results, commonName);
-        } catch (err) {
-            if (isStale()) return;
-            console.error("Failed to load universities:", err);
-            universitySelect.replaceChildren();
-            const failOption = document.createElement("option");
-            failOption.value = "";
-            failOption.textContent = "Unable to load universities";
-            universitySelect.appendChild(failOption);
-            showError(friendlyErrorMessage(err, "universities"));
-        } finally {
-            if (!isStale()) hideLoading();
-        }
-    }
-
-    function finishUniversityLoad(rawResults, commonName) {
-        const deduped = deduplicateUniversities(rawResults);
-        const sorted = sortUniversities(deduped);
-
-        universitySelect.replaceChildren();
-
-        if (sorted.length === 0) {
-            const emptyOption = document.createElement("option");
-            emptyOption.value = "";
-            emptyOption.textContent = "No universities found";
-            universitySelect.appendChild(emptyOption);
+        if (universities.length === 0) {
+            universitySelect.innerHTML = `<option value="">No universities found</option>`;
             universitySelect.disabled = true;
-            submitButton.disabled = true;
-            universityCount.textContent = "";
-            showError("No universities were found for this country.");
-            hideLoading();
+            universityHelper.textContent = `No universities found for ${countryName} in the database.`;
+            universityHelper.className = "helper warning";
+            showStatus(`No universities found for ${countryName}. Please select a different country.`, "warning");
             return;
         }
 
-        const placeholder = document.createElement("option");
-        placeholder.value = "";
-        placeholder.textContent = "Select a university";
-        universitySelect.appendChild(placeholder);
-
-        const fragment = document.createDocumentFragment();
-        sorted.forEach((uni, index) => {
+        universities.forEach((university, index) => {
             const option = document.createElement("option");
-            const stableValue = uni.name || uni.domains[0] || String(index);
-            option.value = stableValue;
-            option.textContent = uni.name;
-            option.dataset.index = String(index);
-            fragment.appendChild(option);
+            option.value = String(index);
+            option.textContent = university.name;
+            universitySelect.appendChild(option);
         });
-        universitySelect.appendChild(fragment);
-        universitySelect._records = sorted;
 
         universitySelect.disabled = false;
-        universityCount.textContent = sorted.length + (sorted.length === 1 ? " university found" : " universities found");
-        showSuccess("Universities loaded for " + commonName + ".");
-        hideLoading();
+        universityHelper.textContent = `${universities.length} universities available`;
+
+    } catch (error) {
+        if (error.name === "AbortError") {
+            return;
+        }
+
+        console.error("University API error:", error);
+        universitySelect.innerHTML = `<option value="">Unable to load universities</option>`;
+        universitySelect.disabled = true;
+        universityHelper.innerHTML = `
+            Could not connect to the university API. 
+            <button class="retry-button" onclick="retryLoadUniversities()">Retry</button>
+        `;
+        universityHelper.className = "helper error";
+        showStatus("Unable to load universities for this country. Please try again or select a different country.", "error");
+
+    } finally {
+        setUniversityLoading(false);
+    }
+}
+
+/*
+==========================================================
+RETRY FUNCTION
+==========================================================
+*/
+window.retryLoadUniversities = function() {
+    if (selectedCountry) {
+        loadUniversities(selectedCountry);
+    }
+};
+
+/*
+==========================================================
+COUNTRY CHANGE
+==========================================================
+*/
+countrySelect.addEventListener("change", async function() {
+    hideStatus();
+
+    const countryCode = this.value;
+
+    // Reset university
+    universitySelect.disabled = true;
+    universitySelect.innerHTML = `<option value="">Select a country first</option>`;
+    universityHelper.className = "helper";
+    universityHelper.textContent = "";
+
+    if (!countryCode) {
+        selectedCountry = null;
+        return;
     }
 
-    // ---------------------------------------------------------------------
-    // Event handlers
-    // ---------------------------------------------------------------------
-    countrySelect.addEventListener("change", () => {
-        selectedUniversityRecord = null;
-        submitButton.disabled = true;
-        resultSection.classList.add("hidden");
+    selectedCountry = countries.find(country => country.code === countryCode);
 
-        const cca2 = countrySelect.value;
-        if (!cca2) {
-            universitySelect.replaceChildren();
-            const placeholder = document.createElement("option");
-            placeholder.value = "";
-            placeholder.textContent = "Select a country first";
-            universitySelect.appendChild(placeholder);
-            universitySelect.disabled = true;
-            universityCount.textContent = "";
-            clearStatus();
+    if (!selectedCountry) {
+        return;
+    }
+
+    await loadUniversities(selectedCountry);
+});
+
+/*
+==========================================================
+FORM SUBMIT
+==========================================================
+*/
+form.addEventListener("submit", function(event) {
+    event.preventDefault();
+    hideStatus();
+
+    const name = nameInput.value.trim();
+    const phone = phoneInput.value.trim();
+    const countryCode = countrySelect.value;
+    const universityIndex = universitySelect.value;
+
+    if (!name) {
+        showStatus("Please enter your full name.", "error");
+        nameInput.focus();
+        return;
+    }
+
+    if (!phone) {
+        showStatus("Please enter your phone number.", "error");
+        phoneInput.focus();
+        return;
+    }
+
+    if (!selectedCountry) {
+        showStatus("Please select a country.", "error");
+        countrySelect.focus();
+        return;
+    }
+
+    if (!universityIndex || !universities[Number(universityIndex)]) {
+        if (universities.length === 0) {
+            showStatus("No universities available for this country. Please select a different country.", "warning");
             return;
         }
+        showStatus("Please select a university.", "error");
+        universitySelect.focus();
+        return;
+    }
 
-        const country = getCountryByCca2(cca2);
-        if (!country) {
-            showError("Unable to load universities for this country.");
-            return;
-        }
-        loadUniversities(country);
-    });
+    const university = universities[Number(universityIndex)];
 
-    universitySelect.addEventListener("change", () => {
-        const records = universitySelect._records || [];
-        const selectedOption = universitySelect.selectedOptions[0];
-        const index = selectedOption ? Number(selectedOption.dataset.index) : NaN;
-        selectedUniversityRecord = Number.isInteger(index) ? records[index] || null : null;
-        submitButton.disabled = !selectedUniversityRecord;
-    });
+    const registration = {
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+        name: name,
+        phone: phone,
+        country: {
+            name: selectedCountry.name,
+            alpha2: selectedCountry.code,
+            iso3: selectedCountry.iso3 || "",
+            flag: selectedCountry.flag || "🌍"
+        },
+        university: {
+            name: university.name,
+            country: university.country,
+            alpha2: university.alpha_two_code,
+            domains: university.domains,
+            websites: university.web_pages
+        },
+        createdAt: new Date().toISOString()
+    };
 
-    selectionForm.addEventListener("submit", (event) => {
-        event.preventDefault();
+    const registrations = getRegistrations();
+    registrations.push(registration);
+    saveRegistrations(registrations);
 
-        const cca2 = countrySelect.value;
-        const country = getCountryByCca2(cca2);
+    updateRegistrationCount();
+    showStatus("Registration saved successfully.", "success");
 
-        if (!country) {
-            showError("Please select a valid country.");
-            return;
-        }
-        if (!selectedUniversityRecord) {
-            showError("Please select a university.");
-            return;
-        }
+    form.reset();
+    selectedCountry = null;
+    universities = [];
+    universitySelect.disabled = true;
+    universitySelect.innerHTML = `<option value="">Select a country first</option>`;
+    universityHelper.className = "helper";
+    universityHelper.textContent = "";
+    countryHelper.textContent = `${countries.length} countries available`;
 
-        selectedCountryOutput.textContent = country.name.common;
-        selectedUniversityOutput.textContent = selectedUniversityRecord.name +
-        (selectedUniversityRecord.country ? " (" + selectedUniversityRecord.country + ")" : "");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+});
 
-        const firstWebPage = selectedUniversityRecord.webPages && selectedUniversityRecord.webPages[0];
-        if (isValidHttpUrl(firstWebPage)) {
-            resultLink.href = firstWebPage;
-            resultLinkWrap.classList.remove("hidden");
-        } else {
-            resultLink.removeAttribute("href");
-            resultLinkWrap.classList.add("hidden");
-        }
+/*
+==========================================================
+LOCAL JSON STORAGE
+==========================================================
+*/
+function getRegistrations() {
+    try {
+        const raw = localStorage.getItem(CONFIG.storageKey);
+        if (!raw) return [];
+        const data = JSON.parse(raw);
+        return Array.isArray(data) ? data : [];
+    } catch (error) {
+        console.error("Storage read error:", error);
+        return [];
+    }
+}
 
-        resultSection.classList.remove("hidden");
-        showSuccess("Selection confirmed.");
-        initIcons();
+function saveRegistrations(data) {
+    localStorage.setItem(CONFIG.storageKey, JSON.stringify(data));
+}
 
-        if (typeof resultSection.scrollIntoView === "function") {
-            resultSection.scrollIntoView({ behavior: "smooth", block: "start" });
-        }
-    });
+/*
+==========================================================
+REGISTRATION COUNT
+==========================================================
+*/
+function updateRegistrationCount() {
+    const count = getRegistrations().length;
+    registrationCount.textContent = `${count} ${count === 1 ? "record" : "records"}`;
+}
 
-    resetButton.addEventListener("click", () => {
-        universityLoadGeneration++;
-        selectedUniversityRecord = null;
+/*
+==========================================================
+EXPORT JSON
+==========================================================
+*/
+exportButton.addEventListener("click", function() {
+    const registrations = getRegistrations();
 
-        if (cache.countries) {
-            populateCountrySelect(cache.countries);
-            countrySelect.disabled = false;
-        }
-        countrySelect.value = "";
+    if (!registrations.length) {
+        showStatus("There are no registrations to export.", "error");
+        return;
+    }
 
-        universitySelect.replaceChildren();
-        const placeholder = document.createElement("option");
-        placeholder.value = "";
-        placeholder.textContent = "Select a country first";
-        universitySelect.appendChild(placeholder);
-        universitySelect.disabled = true;
-        universityCount.textContent = "";
+    const json = JSON.stringify(registrations, null, 2);
+    const blob = new Blob([json], { type: "application/json;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const date = new Date().toISOString().slice(0, 10);
 
-        submitButton.disabled = true;
-        resultSection.classList.add("hidden");
-        resultLinkWrap.classList.add("hidden");
-        clearStatus();
-        hideLoading();
-    });
+    link.href = url;
+    link.download = `scholar-registrations-${date}.json`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
 
-    // ---------------------------------------------------------------------
-    // Init
-    // ---------------------------------------------------------------------
-    initIcons();
-    loadCountries().then(initIcons);
+    showStatus("JSON export created successfully.", "success");
+});
+
+/*
+==========================================================
+CLEAR LOCAL DATA
+==========================================================
+*/
+clearButton.addEventListener("click", function() {
+    const registrations = getRegistrations();
+
+    if (!registrations.length) {
+        showStatus("There are no saved registrations.", "error");
+        return;
+    }
+
+    const confirmed = window.confirm("Delete all locally saved registrations?");
+    if (!confirmed) return;
+
+    localStorage.removeItem(CONFIG.storageKey);
+    updateRegistrationCount();
+    showStatus("All local registrations have been deleted.", "success");
+});
+
+/*
+==========================================================
+INITIALIZE
+==========================================================
+*/
+document.addEventListener("DOMContentLoaded", async function() {
+    updateRegistrationCount();
+    await loadCountries();
+});
 </script>
+
 </body>
 </html>
