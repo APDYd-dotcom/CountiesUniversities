@@ -155,7 +155,9 @@
     // Constants
     // ---------------------------------------------------------------------
     const COUNTRIES_API_URL = "https://countriesnow.space/api/v0.1/countries";
-    const UNIVERSITIES_URL = "https://universities.hipolabs.com/search";   // HTTPS – no mixed content
+    // Use HTTPS directly; if it fails, we'll fall back to a CORS proxy.
+    const UNIVERSITIES_URL = "https://universities.hipolabs.com/search";
+    const PROXY_URL = "https://api.allorigins.win/raw?url="; // CORS proxy over HTTPS
     const REQUEST_TIMEOUT_MS = 10000;
 
     // ---------------------------------------------------------------------
@@ -185,7 +187,6 @@
     const resultLinkWrap = document.getElementById("resultLinkWrap");
     const resultLink = document.getElementById("resultLink");
 
-    // In-memory selection state
     let selectedUniversityRecord = null;
 
     // ---------------------------------------------------------------------
@@ -232,20 +233,24 @@
       });
     }
 
-    async function fetchJson(url) {
+    async function fetchJson(url, useProxy = false) {
+      let finalUrl = url;
+      if (useProxy) {
+        finalUrl = PROXY_URL + encodeURIComponent(url);
+      }
       let response;
       try {
-        response = await fetchWithTimeout(url);
+        response = await fetchWithTimeout(finalUrl);
       } catch (err) {
         if (err && err.message === "TIMEOUT_OR_ABORTED") {
           throw err;
         }
-        console.error("Network error fetching", url, err);
+        console.error("Network error fetching", finalUrl, err);
         throw new Error("NETWORK_ERROR");
       }
 
       if (!response.ok) {
-        console.error("HTTP error", response.status, url);
+        console.error("HTTP error", response.status, finalUrl);
         throw new Error("HTTP_" + response.status);
       }
 
@@ -253,13 +258,13 @@
         const data = await response.json();
         return data;
       } catch (err) {
-        console.error("Invalid JSON from", url, err);
+        console.error("Invalid JSON from", finalUrl, err);
         throw new Error("INVALID_JSON");
       }
     }
 
     // ---------------------------------------------------------------------
-    // Status / loading / error / success UI helpers
+    // Status UI helpers
     // ---------------------------------------------------------------------
     function showLoading(message) {
       loadingIndicator.setAttribute("aria-hidden", "false");
@@ -299,32 +304,22 @@
 
     function friendlyErrorMessage(err, context) {
       const code = err && err.message ? err.message : "";
-      if (code === "TIMEOUT_OR_ABORTED") {
-        return "The request timed out. Please try again.";
-      }
-      if (code === "NETWORK_ERROR") {
-        return context === "countries"
-          ? "Unable to load countries. Please try again."
-          : "Unable to load universities for this country.";
-      }
+      if (code === "TIMEOUT_OR_ABORTED") return "The request timed out. Please try again.";
+      if (code === "NETWORK_ERROR") return context === "countries" ? "Unable to load countries." : "Unable to load universities.";
       if (code.startsWith("HTTP_")) {
         const status = code.replace("HTTP_", "");
-        if (status === "429") return "The public API is temporarily unavailable (rate limited). Please try again shortly.";
-        if (status === "404") return "No data was found for this request.";
-        if (status === "400") return "The request was invalid. Please try a different selection.";
-        if (status === "500") return "The public API is temporarily unavailable.";
-        return "The public API is temporarily unavailable.";
+        if (status === "429") return "Rate limited. Please try again shortly.";
+        if (status === "404") return "No data found.";
+        if (status === "400") return "Invalid request.";
+        if (status === "500") return "Server error.";
+        return "API error.";
       }
-      if (code === "INVALID_JSON") {
-        return "Received an unexpected response from the server.";
-      }
-      return context === "countries"
-        ? "Unable to load countries. Please try again."
-        : "Unable to load universities for this country.";
+      if (code === "INVALID_JSON") return "Unexpected response from server.";
+      return context === "countries" ? "Unable to load countries." : "Unable to load universities.";
     }
 
     // ---------------------------------------------------------------------
-    // Data normalization / sorting / dedup
+    // Data helpers
     // ---------------------------------------------------------------------
     function sortCountries(countries) {
       return [...countries].sort((a, b) => {
@@ -373,7 +368,7 @@
     }
 
     // ---------------------------------------------------------------------
-    // Country loading (live from CountriesNow API)
+    // Country loading
     // ---------------------------------------------------------------------
     async function loadCountries() {
       showLoading("Loading countries...");
@@ -394,20 +389,16 @@
         }
 
         const data = await fetchJson(COUNTRIES_API_URL);
-
         if (!data || !data.data || !Array.isArray(data.data)) {
           throw new Error("INVALID_RESPONSE");
         }
 
-        // Transform to { name: { common: ... }, cca2: ... }
         const countries = data.data.map(item => ({
           name: { common: item.name || item.country || "Unknown" },
           cca2: item.code || item.iso2 || ""
         })).filter(c => c.cca2 && c.name.common);
 
-        if (countries.length === 0) {
-          throw new Error("EMPTY_RESPONSE");
-        }
+        if (countries.length === 0) throw new Error("EMPTY_RESPONSE");
 
         cache.countries = sortCountries(countries);
         populateCountrySelect(cache.countries);
@@ -450,20 +441,37 @@
     }
 
     // ---------------------------------------------------------------------
-    // University loading + country-name mismatch resolution
+    // University loading with HTTPS fallback to proxy
     // ---------------------------------------------------------------------
     async function fetchUniversitiesByCountryName(countryName) {
       const url = UNIVERSITIES_URL + "?country=" + encodeURIComponent(countryName);
-      const data = await fetchJson(url);
-      if (!Array.isArray(data)) return [];
-      return data.map(normalizeUniversity);
+      try {
+        // Try direct HTTPS first
+        return await fetchJson(url);
+      } catch (err) {
+        // If it fails (network error, CORS, etc.), try via proxy
+        console.warn("Direct HTTPS failed, trying proxy for:", url);
+        try {
+          const proxyData = await fetchJson(url, true); // useProxy = true
+          return proxyData;
+        } catch (proxyErr) {
+          console.error("Proxy also failed:", proxyErr);
+          throw proxyErr;
+        }
+      }
     }
 
     async function loadAllHipoUniversities() {
-      if (cache.hipoAllUniversities) {
-        return cache.hipoAllUniversities;
+      if (cache.hipoAllUniversities) return cache.hipoAllUniversities;
+      let data;
+      try {
+        data = await fetchUniversitiesByCountryName(""); // empty query returns all? Actually it returns all if no param.
+        // But better to fetch all: we can just fetch without country param
+        // Use the same function with empty string.
+      } catch (err) {
+        console.warn("Failed to fetch all universities, will build map on demand.");
+        data = [];
       }
-      const data = await fetchJson(UNIVERSITIES_URL);
       const normalized = Array.isArray(data) ? data.map(normalizeUniversity) : [];
       cache.hipoAllUniversities = normalized;
       return normalized;
@@ -562,9 +570,7 @@
         universitySelect.appendChild(failOption);
         showError(friendlyErrorMessage(err, "universities"));
       } finally {
-        if (!isStale()) {
-          hideLoading();
-        }
+        if (!isStale()) hideLoading();
       }
     }
 
@@ -602,7 +608,6 @@
         fragment.appendChild(option);
       });
       universitySelect.appendChild(fragment);
-      universitySelect.dataset.records = "";
       universitySelect._records = sorted;
 
       universitySelect.disabled = false;
