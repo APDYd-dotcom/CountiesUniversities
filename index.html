@@ -146,7 +146,7 @@
     </section>
 
     <footer class="mt-10 text-center text-xs text-gray-400">
-      Data from CountriesNow and the Hipo Universities API.
+      Data from CountriesNow and the Hipo Universities API (via CORS proxy).
     </footer>
   </div>
 
@@ -155,9 +155,9 @@
     // Constants
     // ---------------------------------------------------------------------
     const COUNTRIES_API_URL = "https://countriesnow.space/api/v0.1/countries";
-    // Use HTTPS directly; if it fails, we'll fall back to a CORS proxy.
-    const UNIVERSITIES_URL = "https://universities.hipolabs.com/search";
-    const PROXY_URL = "https://api.allorigins.win/raw?url="; // CORS proxy over HTTPS
+    // Use a CORS proxy over HTTPS to fetch the HTTP university API.
+    const PROXY_URL = "https://api.allorigins.win/raw?url=";
+    const UNIVERSITIES_BASE_URL = "http://universities.hipolabs.com/search"; // HTTP, but we'll proxy it
     const REQUEST_TIMEOUT_MS = 10000;
 
     // ---------------------------------------------------------------------
@@ -233,24 +233,20 @@
       });
     }
 
-    async function fetchJson(url, useProxy = false) {
-      let finalUrl = url;
-      if (useProxy) {
-        finalUrl = PROXY_URL + encodeURIComponent(url);
-      }
+    async function fetchJson(url) {
       let response;
       try {
-        response = await fetchWithTimeout(finalUrl);
+        response = await fetchWithTimeout(url);
       } catch (err) {
         if (err && err.message === "TIMEOUT_OR_ABORTED") {
           throw err;
         }
-        console.error("Network error fetching", finalUrl, err);
+        console.error("Network error fetching", url, err);
         throw new Error("NETWORK_ERROR");
       }
 
       if (!response.ok) {
-        console.error("HTTP error", response.status, finalUrl);
+        console.error("HTTP error", response.status, url);
         throw new Error("HTTP_" + response.status);
       }
 
@@ -258,7 +254,7 @@
         const data = await response.json();
         return data;
       } catch (err) {
-        console.error("Invalid JSON from", finalUrl, err);
+        console.error("Invalid JSON from", url, err);
         throw new Error("INVALID_JSON");
       }
     }
@@ -441,40 +437,32 @@
     }
 
     // ---------------------------------------------------------------------
-    // University loading with HTTPS fallback to proxy
+    // University loading – always via proxy (HTTPS)
     // ---------------------------------------------------------------------
     async function fetchUniversitiesByCountryName(countryName) {
-      const url = UNIVERSITIES_URL + "?country=" + encodeURIComponent(countryName);
-      try {
-        // Try direct HTTPS first
-        return await fetchJson(url);
-      } catch (err) {
-        // If it fails (network error, CORS, etc.), try via proxy
-        console.warn("Direct HTTPS failed, trying proxy for:", url);
-        try {
-          const proxyData = await fetchJson(url, true); // useProxy = true
-          return proxyData;
-        } catch (proxyErr) {
-          console.error("Proxy also failed:", proxyErr);
-          throw proxyErr;
-        }
-      }
+      // Build the HTTP URL for the universities API
+      const httpUrl = UNIVERSITIES_BASE_URL + "?country=" + encodeURIComponent(countryName);
+      // Proxy it over HTTPS
+      const proxyUrl = PROXY_URL + encodeURIComponent(httpUrl);
+      const data = await fetchJson(proxyUrl);
+      if (!Array.isArray(data)) return [];
+      return data.map(normalizeUniversity);
     }
 
     async function loadAllHipoUniversities() {
       if (cache.hipoAllUniversities) return cache.hipoAllUniversities;
-      let data;
       try {
-        data = await fetchUniversitiesByCountryName(""); // empty query returns all? Actually it returns all if no param.
-        // But better to fetch all: we can just fetch without country param
-        // Use the same function with empty string.
+        // Fetch all universities via proxy (no country filter)
+        const allUrl = PROXY_URL + encodeURIComponent(UNIVERSITIES_BASE_URL);
+        const data = await fetchJson(allUrl);
+        const normalized = Array.isArray(data) ? data.map(normalizeUniversity) : [];
+        cache.hipoAllUniversities = normalized;
+        return normalized;
       } catch (err) {
-        console.warn("Failed to fetch all universities, will build map on demand.");
-        data = [];
+        console.warn("Failed to fetch all universities:", err);
+        cache.hipoAllUniversities = [];
+        return [];
       }
-      const normalized = Array.isArray(data) ? data.map(normalizeUniversity) : [];
-      cache.hipoAllUniversities = normalized;
-      return normalized;
     }
 
     function buildHipoCountryMap(allUniversities) {
@@ -533,6 +521,7 @@
 
         if (isStale()) return;
 
+        // If no results, try to resolve country name mismatch
         if (results.length === 0) {
           showLoading("Resolving country name differences...");
           let hipoName = null;
