@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Country &amp; University Selector</title>
-    <meta name="description" content="Pick a country and browse its universities, loaded live from public REST APIs." />
+    <meta name="description" content="Pick a country and browse its universities, loaded from a static JSON dataset." />
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -37,7 +37,7 @@
                 <i data-lucide="globe" class="w-6 h-6 text-gray-700" aria-hidden="true"></i>
             </div>
             <h1 class="text-2xl font-medium tracking-tight text-gray-900">Country &amp; University Selector</h1>
-            <p class="mt-2 text-sm text-gray-500">Choose a country to browse its universities, loaded live from public data.</p>
+            <p class="mt-2 text-sm text-gray-500">Choose a country to browse its universities, loaded from a static dataset.</p>
         </header>
 
         <!-- Main form card -->
@@ -146,7 +146,7 @@ aria-labelledby="resultHeading"
 </section>
 
 <footer class="mt-10 text-center text-xs text-gray-400">
-    Data from CountriesNow and the Hipo Universities API (via CORS proxy).
+    Data from CountriesNow and the Hipo Universities dataset.
 </footer>
 </div>
 
@@ -155,19 +155,17 @@ aria-labelledby="resultHeading"
     // Constants
     // ---------------------------------------------------------------------
     const COUNTRIES_API_URL = "https://countriesnow.space/api/v0.1/countries";
-    // Use a reliable CORS proxy over HTTPS.
-    const PROXY_URL = "https://api.cors.lol/?url="; // cors.lol proxy[reference:2]
-    const UNIVERSITIES_BASE_URL = "http://universities.hipolabs.com/search"; // HTTP, but we'll proxy it
-    const REQUEST_TIMEOUT_MS = 15000; // Increased timeout for proxy
+    // Static JSON dataset from Hipo's university-domains-list repository
+    const UNIVERSITIES_JSON_URL = "https://raw.githubusercontent.com/Hipo/university-domains-list/master/world_universities_and_domains.json";
+    const REQUEST_TIMEOUT_MS = 15000;
 
     // ---------------------------------------------------------------------
     // Cache
     // ---------------------------------------------------------------------
     const cache = {
         countries: null,
-        universitiesByCountry: new Map(),
-        hipoCountryMap: null,
-        hipoAllUniversities: null
+        allUniversities: null,          // Holds the entire dataset
+        universitiesByCountry: new Map(), // Caches filtered results per country
     };
 
     // ---------------------------------------------------------------------
@@ -325,6 +323,7 @@ aria-labelledby="resultHeading"
         });
     }
 
+    // Normalize a university record from the Hipo JSON format
     function normalizeUniversity(raw) {
         return {
             name: typeof raw.name === "string" && raw.name ? raw.name : "Unnamed university",
@@ -437,50 +436,40 @@ aria-labelledby="resultHeading"
     }
 
     // ---------------------------------------------------------------------
-    // University loading – always via proxy (HTTPS)
+    // University loading – from static JSON
     // ---------------------------------------------------------------------
-    async function fetchUniversitiesByCountryName(countryName) {
-        // Build the HTTP URL for the universities API
-        const httpUrl = UNIVERSITIES_BASE_URL + "?country=" + encodeURIComponent(countryName);
-        // Proxy it over HTTPS using cors.lol[reference:3]
-        const proxyUrl = PROXY_URL + encodeURIComponent(httpUrl);
-        const data = await fetchJson(proxyUrl);
-        if (!Array.isArray(data)) return [];
-        return data.map(normalizeUniversity);
-    }
+    async function loadAllUniversities() {
+        if (cache.allUniversities) {
+            return cache.allUniversities;
+        }
 
-    async function loadAllHipoUniversities() {
-        if (cache.hipoAllUniversities) return cache.hipoAllUniversities;
         try {
-            // Fetch all universities via proxy (no country filter)
-            const allUrl = PROXY_URL + encodeURIComponent(UNIVERSITIES_BASE_URL);
-            const data = await fetchJson(allUrl);
-            const normalized = Array.isArray(data) ? data.map(normalizeUniversity) : [];
-            cache.hipoAllUniversities = normalized;
-            return normalized;
-        } catch (err) {
-            console.warn("Failed to fetch all universities:", err);
-            cache.hipoAllUniversities = [];
-            return [];
-        }
-    }
-
-    function buildHipoCountryMap(allUniversities) {
-        const map = new Map();
-        for (const uni of allUniversities) {
-            if (uni.alpha_two_code && uni.country && !map.has(uni.alpha_two_code)) {
-                map.set(uni.alpha_two_code, uni.country);
+            showLoading("Loading university dataset...");
+            const data = await fetchJson(UNIVERSITIES_JSON_URL);
+            if (!Array.isArray(data)) {
+                throw new Error("Invalid university data format");
             }
+            // Normalize and store the entire dataset
+            cache.allUniversities = data.map(normalizeUniversity);
+            return cache.allUniversities;
+        } catch (err) {
+            console.error("Failed to load university dataset:", err);
+            throw err;
+        } finally {
+            hideLoading();
         }
-        return map;
     }
 
-    async function resolveHipoCountryName(cca2) {
-        if (!cache.hipoCountryMap) {
-            const all = await loadAllHipoUniversities();
-            cache.hipoCountryMap = buildHipoCountryMap(all);
-        }
-        return cache.hipoCountryMap.get(cca2) || null;
+    async function getUniversitiesByCountry(countryName) {
+        // Load the full dataset if not already cached
+        const all = await loadAllUniversities();
+
+        // Filter universities by country name (case-insensitive)
+        const filtered = all.filter(uni =>
+            uni.country && uni.country.toLowerCase() === countryName.toLowerCase()
+        );
+
+        return filtered;
     }
 
     let universityLoadGeneration = 0;
@@ -505,6 +494,7 @@ aria-labelledby="resultHeading"
         universitySelect.appendChild(loadingOption);
 
         try {
+            // Check cache for this country
             if (cache.universitiesByCountry.has(cca2)) {
                 const cached = cache.universitiesByCountry.get(cca2);
                 finishUniversityLoad(cached, commonName);
@@ -513,7 +503,7 @@ aria-labelledby="resultHeading"
 
             let results = [];
             try {
-                results = await fetchUniversitiesByCountryName(commonName);
+                results = await getUniversitiesByCountry(commonName);
             } catch (err) {
                 if (isStale()) return;
                 throw err;
@@ -521,32 +511,7 @@ aria-labelledby="resultHeading"
 
             if (isStale()) return;
 
-            // If no results, try to resolve country name mismatch
-            if (results.length === 0) {
-                showLoading("Resolving country name differences...");
-                let hipoName = null;
-                try {
-                    hipoName = await resolveHipoCountryName(cca2);
-                } catch (err) {
-                    if (isStale()) return;
-                    console.error("Failed to resolve Hipo country name:", err);
-                }
-
-                if (isStale()) return;
-
-                if (hipoName && hipoName !== commonName) {
-                    showLoading("Loading universities...");
-                    try {
-                        results = await fetchUniversitiesByCountryName(hipoName);
-                    } catch (err) {
-                        if (isStale()) return;
-                        throw err;
-                    }
-                }
-            }
-
-            if (isStale()) return;
-
+            // Cache the results
             cache.universitiesByCountry.set(cca2, results);
             finishUniversityLoad(results, commonName);
         } catch (err) {
